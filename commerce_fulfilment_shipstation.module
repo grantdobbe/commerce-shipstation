@@ -15,6 +15,7 @@ function commerce_fulfilment_shipstation_menu() {
     'type' => MENU_LOCAL_TASK,
   );
   
+  return $items;
 }
 
 /**
@@ -82,7 +83,7 @@ function commerce_fulfilment_shipstation_admin_page() {
     '#type' => 'textfield',
     '#title' => t('ShipStation API URI'),
     '#required' => TRUE,
-    '#default_value' => variable_get('commerce_fulfilment_shipstation_api_url', ''),
+    '#default_value' => variable_get('commerce_fulfilment_shipstation_api_uri', ''),
   );
 
   // shipstation logging
@@ -102,22 +103,21 @@ function commerce_fulfilment_shipstation_admin_page() {
   );
 
   // shipstation export paging
-  $options = array( 50 => 50, 75 => 75, 100 => 100, 150 => 150 );
   $form['commerce_fulfilment_shipstation_export_paging'] = array(
     '#type' => 'select',
     '#title' => t('Number of Records to Export per Page'),
     '#description' => t('Sets the number of orders to send to ShipStation at a time. Change this setting if you experience import timeouts.'),
-    '#options' => $options,
+    '#options' => array( 50 => 50, 75 => 75, 100 => 100, 150 => 150 ),
     '#default_value' => variable_get('commerce_fulfilment_shipstation_export_paging', '100'),
   );
 
   // shipstation order export status
   $form['commerce_fulfilment_shipstation_export_status'] = array(
     '#type' => 'select',
-    '#title' => t('Order Statuses to Export into ShipStation'),
+    '#title' => t('Order Status to Export into ShipStation'),
     '#required' => TRUE,
-    '#options' => commerce_order_status_options_list(), // may need to be drupal_assoc_array
-    '#default_option' => variable_get('commerce_fulfilment_shipstation_export_status', ''),
+    '#options' => commerce_order_status_options_list(), 
+    '#default_value' => variable_get('commerce_fulfilment_shipstation_export_status', ''),
   );
 
   // shipstation order import status
@@ -125,23 +125,34 @@ function commerce_fulfilment_shipstation_admin_page() {
     '#type' => 'select',
     '#title' => t('Order Status to Set After ShipStation Import'),
     '#required' => TRUE,
-    '#options' => commerce_order_status_options_list(), // may need to be drupal_assoc_array
-    '#default_option' => variable_get('commerce_fulfilment_shipstation_import_status', ''),
+    '#options' => commerce_order_status_options_list(), 
+    '#default_value' => variable_get('commerce_fulfilment_shipstation_import_status', ''),
   );
 
   // shipstation available shipping methods
+  $options = commerce_fulfilment_shipstation_shipping_methods(commerce_shipping_methods());
   $form['commerce_fulfilment_shipstation_exposed_shipping_methods'] = array(
     '#type' => 'checkboxes',
     '#title' => 'Shipping Methods Available to ShipStation',
     '#required' => TRUE,
-    '#options' => commerce_shipping_services(), // may need to be drupal_assoc_array
-    '#default_option' => variable_get('commerce_fulfilment_shipstation_exposed_shipping_methods', ''),
+    '#options' => $options, // may need to be drupal_map_assoc
+    '#default_value' => variable_get('commerce_fulfilment_shipstation_exposed_shipping_methods', ''),
   );
 
   return system_settings_form($form);
   
 }
 
+function commerce_fulfilment_shipstation_shipping_methods($methods) {
+  $options = array();
+  foreach($methods as $method) {
+    $title   = $method["title"];
+    $display = $method['display_title'];
+    $options[$title] = $display;
+  }
+  
+  return $options;  
+}
 
 /**
  * Connect to the SOAP endpoint and pass the API endpoints and credentials.
