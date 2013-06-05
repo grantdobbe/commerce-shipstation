@@ -1,0 +1,165 @@
+<?php 
+
+/**
+ * Implements hook_menu().
+ */
+function commerce_fulfilment_shipstation_menu() {
+  $items = array();
+  
+  $items['admin/commerce/config/fulfilment/shipstation'] = array(
+    'title' => 'ShipStation',
+    'description' => 'Configure fulfilment for ShipStation',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('commerce_fulfilment_shipstation_admin_page'),
+    'access arguments' => array('configure commerce fulfilment'),
+    'type' => MENU_LOCAL_TASK,
+  );
+  
+}
+
+/**
+ * Implements hook_views_api().
+ */
+function commerce_fulfilment_shipstation_views_api() {
+  return array("version" => "3.0");
+}
+
+/**
+ * Implements hook_action_info().
+ */
+function commerce_fulfilment_shipstation_action_info() {
+  
+}
+
+/**
+ * Implements hook_token_info().
+ */
+function commerce_fulfilment_shipstation_token_info() {
+}
+
+/**
+ * Implements hook_tokens().
+ */
+function commerce_fulfilment_shipstation_tokens($type, $tokens, array $data = array(), array $options = array()) {
+}
+
+/**
+ * Implements hook_entity_view_alter().
+ */
+function commerce_fulfilment_entity_view_alter(&$build, $type) {
+}
+
+/**
+ * Form action to send order to shipstation
+ */
+function commerce_fulfilment_shipstation_sendorder_formaction($form, $form_state) {
+}
+
+/**
+ * Admin settings page
+ */
+function commerce_fulfilment_shipstation_admin_page() {
+  $form = array();
+  
+  // shipstation username
+  $form['commerce_fulfilment_shipstation_username'] = array(
+    '#type' => 'textfield',
+    '#title' => t('ShipStation Username'),
+    '#required' => TRUE,
+    '#default_value' => variable_get('commerce_fulfilment_shipstation_username', ''),
+  );
+
+  // shipstation password
+  $form['commerce_fulfilment_shipstation_password'] = array(
+    '#type' => 'textfield',
+    '#title' => t('ShipStation Password'),
+    '#required' => TRUE,
+    '#default_value' => variable_get('commerce_fulfilment_shipstation_password', ''),
+  );
+
+  // shipstation API URI
+  $form['commerce_fulfilment_shipstation_api_uri'] = array(
+    '#type' => 'textfield',
+    '#title' => t('ShipStation API URI'),
+    '#required' => TRUE,
+    '#default_value' => variable_get('commerce_fulfilment_shipstation_api_url', ''),
+  );
+
+  // shipstation logging
+  $form['commerce_fulfilment_shipstation_logging'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Log requests to ShipStation'),
+    '#description' => t('If this is set, all API requests to ShipStation will be logged to Drupal watchdog.'),
+    '#default_value' => variable_get('commerce_fulfilment_shipstation_logging', 0),
+  );
+
+  // shipstation alternate authentication
+  $form['commerce_fulfilment_shipstation_alternate_auth'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Alternate Authentication'),
+    '#description' => t('Use this field if your web server uses CGI to run PHP.'),
+    '#default_value' => variable_get('commerce_fulfilment_shipstation_alternate_auth', ''),
+  );
+
+  // shipstation export paging
+  $options = array( 50 => 50, 75 => 75, 100 => 100, 150 => 150 );
+  $form['commerce_fulfilment_shipstation_export_paging'] = array(
+    '#type' => 'select',
+    '#title' => t('Number of Records to Export per Page'),
+    '#description' => t('Sets the number of orders to send to ShipStation at a time. Change this setting if you experience import timeouts.'),
+    '#options' => $options,
+    '#default_value' => variable_get('commerce_fulfilment_shipstation_export_paging', '100'),
+  );
+
+  // shipstation order export status
+  $form['commerce_fulfilment_shipstation_export_status'] = array(
+    '#type' => 'select',
+    '#title' => t('Order Statuses to Export into ShipStation'),
+    '#required' => TRUE,
+    '#options' => commerce_order_status_options_list(), // may need to be drupal_assoc_array
+    '#default_option' => variable_get('commerce_fulfilment_shipstation_export_status', ''),
+  );
+
+  // shipstation order import status
+  $form['commerce_fulfilment_shipstation_import_status'] = array(
+    '#type' => 'select',
+    '#title' => t('Order Status to Set After ShipStation Import'),
+    '#required' => TRUE,
+    '#options' => commerce_order_status_options_list(), // may need to be drupal_assoc_array
+    '#default_option' => variable_get('commerce_fulfilment_shipstation_import_status', ''),
+  );
+
+  // shipstation available shipping methods
+  $form['commerce_fulfilment_shipstation_exposed_shipping_methods'] = array(
+    '#type' => 'checkboxes',
+    '#title' => 'Shipping Methods Available to ShipStation',
+    '#required' => TRUE,
+    '#options' => commerce_shipping_services(), // may need to be drupal_assoc_array
+    '#default_option' => variable_get('commerce_fulfilment_shipstation_exposed_shipping_methods', ''),
+  );
+
+  return system_settings_form($form);
+  
+}
+
+
+/**
+ * Connect to the SOAP endpoint and pass the API endpoints and credentials.
+ */
+function commerce_fulfilment_shipstation_getclient() {
+}
+
+/**
+ * Action: Fulfil order.
+ */
+function commerce_fulfilment_shipstation_send_fulfilment_order_action($order, $context = array()) {
+  
+}
+
+/**
+ * Get tracking URL
+ *
+ * Should be provided by a hook ... or we build up a list of possible shipping services.
+ */
+function commerce_fulfilment_shipstation_get_tracking_url($method, $trackingnumber) {
+}

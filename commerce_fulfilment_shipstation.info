@@ -1,0 +1,14 @@
+name = "Commerce ShipStation"
+description = "Commerce integration with ShipStation, an online multi-channel order fulfilment system."
+core = "7.x"
+package = "Commerce shipping"
+version = "7.x-1.2"
+
+dependencies[] = "commerce"
+dependencies[] = "commerce_fulfilment"
+dependencies[] = "rules_scheduler"
+
+configure = "admin/commerce/config/fulfilment/shipstation"
+
+files[] = shipstation/shipstation_handler.php
+
