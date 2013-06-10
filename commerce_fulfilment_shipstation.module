@@ -14,6 +14,13 @@ function commerce_fulfilment_shipstation_menu() {
     'access arguments' => array('configure commerce fulfilment'),
     'type' => MENU_LOCAL_TASK,
   );
+  $items['shipstation/api-callback'] = array(
+    'title' => t('ShipStation API Callback URI'),
+    'page callback' => 'commerce_fulfilment_shipstation_export_orders',
+    'access callback' => TRUE,
+    'access arguments' => array('access commerce fulfilment'),
+    'type' => MENU_CALLBACK,
+  );
   
   return $items;
 }
@@ -54,6 +61,107 @@ function commerce_fulfilment_entity_view_alter(&$build, $type) {
  * Form action to send order to shipstation
  */
 function commerce_fulfilment_shipstation_sendorder_formaction($form, $form_state) {
+}
+
+/**
+ * Identify orders to send to shipstation
+ */
+function commerce_fulfilment_shipstation_export_orders() {
+  $conditions = array('status' => 'processing');
+  $orders = commerce_order_load_multiple(array(), $conditions);
+  $output = new SimpleXMLElement( "<Orders></Orders>" );
+  foreach($orders as $order) {
+    // fetch most of the data we need
+    $data = entity_metadata_wrapper('commerce_order', $order);
+    $bill = $data->commerce_customer_billing->commerce_customer_address;
+    $ship = $data->commerce_customer_shipping->commerce_customer_address;
+    // get the shipping stuff
+    $available_methods = variable_get('commerce_fulfilment_shipstation_exposed_shipping_methods', '');
+    $order_method = commerce_fulfilment_get_shipping_lineitem($data);
+    // sanity check for a shipping method on the order
+    if ($order_method) {
+      $order_ship = $order_method->value()->data['shipping_service']['shipping_method'];
+      //print "<pre>";
+        //var_dump($order_method->commerce_unit_price->amount_decimal->value());
+      //print "</pre>";
+    }
+    
+    // only process orders which have authorized shipping methods
+    if ( $order_method && in_array($order_ship, $available_methods) ) {
+      /* create a line with the following information:
+       * 
+       * tax amount             [NEED]
+       * shipping amount        [part of shipping line item]
+       * order notes            [NEED]
+       * private order notes    [NEED]
+       * coupons used           [provided, sort of]
+       * customer information   [ID provided, commerce_customer_profile_load]
+       * * billing email        
+       * * billing name
+       * * billing address
+       * * shipping name
+       * * shipping address
+       * * etc
+       * line item details      [ID provided, commerce_line_item_load is callback]
+       * * SKU                  [provided through callback]
+       * * name                 [provided through callback]
+       * * dimensions   
+       * * weight
+       * * unit price           [provided through callback]
+       * * item image?          [provided through callback]
+       */
+  
+      // order number
+      $item = $output->addChild( 'Order' );
+      $item->OrderNumber = $data->order_number->value();
+      //order_date 
+      $item->OrderDate = date(DATE_W3C, $data->created->value());
+      // order status
+      $item->OrderStatus = $data->status->value();
+      // last modified
+      $item->LastModified = date(DATE_W3C, $data->changed->value());
+      // shipping method
+      $item->ShippingMethod = $order_method->value()->data['shipping_service']['display_title'];
+      // order total
+      $item->OrderTotal = $data->commerce_order_total->amount_decimal->value();
+      // tax amount
+      // shipping amount
+      //$item->ShippingAmount = commerce_line_items_total($order_method);
+      $item->ShippingAmount = $order_method->commerce_unit_price->amount_decimal->value();
+      // order notes
+      // coupons and discounts
+      // billing address
+      $customer = $item->addChild( 'Customer' );
+      // billing email
+      $customer->CustomerCode = $data->mail->value();
+      // billing info
+      $billing = $customer->addChild( 'BillTo' );
+      $billing->Name = $bill->name_line->value();
+      $billing->Company = $bill->organisation_name->value();
+      $billing->Phone = $data->commerce_customer_billing->field_phone_number->value();
+      $billing->Email = $data->mail->value();
+      // shipping info
+      $shipping = $customer->addChild( 'ShipTo' );
+      $billing->Name = $ship->name_line->value();    
+      $shipping->Address1 = $ship->thoroughfare->value();
+      $shipping->Address2 = $ship->premise->value();
+      $shipping->City = $ship->locality->value();
+      $shipping->State = $ship->administrative_area->value();
+      $shipping->PostalCode = $ship->postal_code->value();
+      $shipping->Country = $ship->country->value();
+      $shipping->Phone = $data->commerce_customer_shipping->field_phone_number->value();
+      // line item details
+      //$line_items = $item->addChild( 'Items' );
+      //foreach ()
+    }  
+    
+  }
+  print "<pre>";
+  var_dump($output);
+  var_dump(commerce_customer_profile_load(5));
+  
+  //var_dump($orders);
+  print "</pre>";
 }
 
 /**
@@ -143,19 +251,21 @@ function commerce_fulfilment_shipstation_admin_page() {
   
 }
 
+/**
+ * Returns a list of shipping service options
+ */
 function commerce_fulfilment_shipstation_shipping_methods($methods) {
   $options = array();
   foreach($methods as $method) {
-    $title   = $method["title"];
+    $title   = $method["name"];
     $display = $method['display_title'];
     $options[$title] = $display;
   }
-  
   return $options;  
 }
 
 /**
- * Connect to the SOAP endpoint and pass the API endpoints and credentials.
+ * Connect to the OData endpoint and pass the API endpoints and credentials.
  */
 function commerce_fulfilment_shipstation_getclient() {
 }
