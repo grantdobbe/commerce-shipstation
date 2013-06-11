@@ -58,12 +58,6 @@ function commerce_fulfilment_entity_view_alter(&$build, $type) {
 }
 
 /**
- * Form action to send order to shipstation
- */
-function commerce_fulfilment_shipstation_sendorder_formaction($form, $form_state) {
-}
-
-/**
  * Identify orders to send to shipstation
  */
 function commerce_fulfilment_shipstation_export_orders() {
@@ -77,72 +71,68 @@ function commerce_fulfilment_shipstation_export_orders() {
     $ship = $data->commerce_customer_shipping->commerce_customer_address;
     // get the shipping stuff
     $available_methods = variable_get('commerce_fulfilment_shipstation_exposed_shipping_methods', '');
-    $order_method = commerce_fulfilment_get_shipping_lineitem($data);
+    $chosen_method = commerce_fulfilment_get_shipping_lineitem($data);
     // sanity check for a shipping method on the order
-    if ($order_method) {
-      $order_ship = $order_method->value()->data['shipping_service']['shipping_method'];
+    if ($chosen_method) {
+      $chosen_ship = $chosen_method->value()->data['shipping_service']['shipping_method'];
       //print "<pre>";
         //var_dump($order_method->commerce_unit_price->amount_decimal->value());
       //print "</pre>";
     }
     
     // only process orders which have authorized shipping methods
-    if ( $order_method && in_array($order_ship, $available_methods) ) {
+    if ( $chosen_method && in_array($chosen_ship, $available_methods) ) {
       /* create a line with the following information:
        * 
        * tax amount             [NEED]
-       * shipping amount        [part of shipping line item]
        * order notes            [NEED]
        * private order notes    [NEED]
        * coupons used           [provided, sort of]
-       * customer information   [ID provided, commerce_customer_profile_load]
-       * * billing email        
-       * * billing name
-       * * billing address
-       * * shipping name
-       * * shipping address
-       * * etc
-       * line item details      [ID provided, commerce_line_item_load is callback]
-       * * SKU                  [provided through callback]
-       * * name                 [provided through callback]
-       * * dimensions   
-       * * weight
-       * * unit price           [provided through callback]
-       * * item image?          [provided through callback]
-       */
-  
+      */
+      // set up the xml schema
+      $ss_order = $output->addChild( 'Order' );
+      
       // order number
-      $item = $output->addChild( 'Order' );
-      $item->OrderNumber = $data->order_number->value();
+      $ss_order->OrderNumber = $data->order_number->value();
+      
       //order_date 
-      $item->OrderDate = date(DATE_W3C, $data->created->value());
+      $ss_order->OrderDate = date(DATE_W3C, $data->created->value());
+      
       // order status
-      $item->OrderStatus = $data->status->value();
+      $ss_order->OrderStatus = $data->status->value();
+      
       // last modified
-      $item->LastModified = date(DATE_W3C, $data->changed->value());
+      $ss_order->LastModified = date(DATE_W3C, $data->changed->value());
+      
       // shipping method
-      $item->ShippingMethod = $order_method->value()->data['shipping_service']['display_title'];
+      $ss_order->ShippingMethod = $chosen_method->value()->data['shipping_service']['display_title'];
+      
       // order total
-      $item->OrderTotal = $data->commerce_order_total->amount_decimal->value();
+      $ss_order->OrderTotal = $data->commerce_order_total->amount_decimal->value();
       // tax amount
+      
       // shipping amount
-      //$item->ShippingAmount = commerce_line_items_total($order_method);
-      $item->ShippingAmount = $order_method->commerce_unit_price->amount_decimal->value();
+      $ss_order->ShippingAmount = $chosen_method->commerce_unit_price->amount_decimal->value();
       // order notes
+      
       // coupons and discounts
+      
       // billing address
-      $customer = $item->addChild( 'Customer' );
+      $customer = $ss_order->addChild( 'Customer' );
+      
       // billing email
       $customer->CustomerCode = $data->mail->value();
+      
       // billing info
       $billing = $customer->addChild( 'BillTo' );
       $billing->Name = $bill->name_line->value();
       $billing->Company = $bill->organisation_name->value();
       $billing->Phone = $data->commerce_customer_billing->field_phone_number->value();
       $billing->Email = $data->mail->value();
+      
       // shipping info
       $shipping = $customer->addChild( 'ShipTo' );
-      $billing->Name = $ship->name_line->value();    
+      $shipping->Name = $ship->name_line->value();    
       $shipping->Address1 = $ship->thoroughfare->value();
       $shipping->Address2 = $ship->premise->value();
       $shipping->City = $ship->locality->value();
@@ -150,18 +140,43 @@ function commerce_fulfilment_shipstation_export_orders() {
       $shipping->PostalCode = $ship->postal_code->value();
       $shipping->Country = $ship->country->value();
       $shipping->Phone = $data->commerce_customer_shipping->field_phone_number->value();
+      
       // line item details
-      //$line_items = $item->addChild( 'Items' );
-      //foreach ()
+      $line_items = $ss_order->addChild( 'Items' );
+      foreach ($data->commerce_line_items as $id => $item) {
+        if ($item->type->value() !== 'product' ) { 
+          continue;
+        }
+        $raw_product = commerce_product_load($item->commerce_product->raw());
+        $product = entity_metadata_wrapper('commerce_product', $raw_product);
+        $line_item = $line_items->addChild( 'Item' );
+        // sku
+        $line_item->SKU = $product->sku->value();
+        //name
+        $line_item->Name = $product->title->value();
+        // weight
+        if ($product->field_weight->unit->value() == "kg") {
+          $line_item->Weight = 1000 * $product->field_weight->weight->value();
+        }
+        else {
+          $line_item->Weight = $product->field_weight->weight->value();
+        }
+        $line_item->WeightUnits = $product->field_weight->unit->value();
+        // quantity
+        $line_item->Quantity = $item->quantity->value();
+        // unit price
+        $line_item->UnitPrice = $item->commerce_unit_price->amount_decimal->value();
+        // image
+      }
     }  
     
   }
-  print "<pre>";
-  var_dump($output);
-  var_dump(commerce_customer_profile_load(5));
   
-  //var_dump($orders);
-  print "</pre>";
+  Header( 'Content-type: text/xml' );
+  $dom = dom_import_simplexml($output)->ownerDocument;
+  $dom->formatOutput = true;
+  print $dom->saveXML();
+
 }
 
 /**
