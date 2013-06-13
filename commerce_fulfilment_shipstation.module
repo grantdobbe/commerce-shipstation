@@ -16,20 +16,13 @@ function commerce_fulfilment_shipstation_menu() {
   );
   $items['shipstation/api-callback'] = array(
     'title' => t('ShipStation API Callback URI'),
-    'page callback' => 'commerce_fulfilment_shipstation_export_orders',
+    'page callback' => 'commerce_fulfilment_shipstation_endpoint',
     'access callback' => TRUE,
     'access arguments' => array('access commerce fulfilment'),
     'type' => MENU_CALLBACK,
   );
   
   return $items;
-}
-
-/**
- * Implements hook_views_api().
- */
-function commerce_fulfilment_shipstation_views_api() {
-  return array("version" => "3.0");
 }
 
 /**
@@ -51,10 +44,52 @@ function commerce_fulfilment_shipstation_token_info() {
 function commerce_fulfilment_shipstation_tokens($type, $tokens, array $data = array(), array $options = array()) {
 }
 
-/**
- * Implements hook_entity_view_alter().
- */
-function commerce_fulfilment_entity_view_alter(&$build, $type) {
+function commerce_fulfilment_shipstation_endpoint() {
+  $authorized = false;
+  $logging  = variable_get('commerce_fulfilment_shipstation_logging', 0);
+  $auth_key = variable_get('commerce_fulfilment_shipstation_alternate_auth', '');
+  $username = variable_get('commerce_fulfilment_shipstation_username', '');
+  $password = variable_get('commerce_fulfilment_shipstation_password', '');
+  
+  // authenticate using token 
+  if( !empty ( $_GET['auth_key'] ) ) {
+    if ( $auth_key == $_GET['auth_key'] ) {
+      $authorized = true;
+    }
+    else if ( $auth_key != $_GET['auth_key'] ) {
+      watchdog('commerce_fulfilment_shipstation', 'Wrong auth_key passed', WATCHDOG_ERROR);
+    }
+  }
+  // authenticate using HTTP Basic
+  if ( $authorized == false ) {
+    // no u/p combo
+    if ( !isset( $_SERVER['PHP_AUTH_USER'] ) ) {
+      header( "WWW-Authenticate: Basic realm =\"ShipStation XML API for Drupal Commerce" );
+      header( "HTTP/1.0 401 Unauthorized" );
+      print t( 'Error: You must enter a username and password.');
+      exit;
+    }
+    // empty u/p combo
+    if ( empty( $_SERVER['PHP_AUTH_USER'] ) || empty( $_SERVER['PHP_AUTH_PW'] ) ) {
+      print t( 'Error: Basic HTTP authentication is required. Please add username and password to URL string.');
+      exit;
+    }
+    // bad u/p combo
+    if ( $_SERVER['PHP_AUTH_USER'] != $username || $_SERVER['PHP_AUTH_PW'] != $password ) {
+      print t( 'Error: Basic HTTP authentication failed. Please check your credentials and try again.');
+      exit;
+    }
+  }
+  // if we get past the door, run the call based on the action
+  switch ($_GET['action']) {
+    case "export":
+      return commerce_fulfilment_shipstation_export_orders();
+    case "shipnotify":
+      return t("fill in this blank with an api call");
+    default:
+      return t( 'Error: Invalid action, or no action defined.');
+  }
+    
 }
 
 /**
@@ -167,6 +202,7 @@ function commerce_fulfilment_shipstation_export_orders() {
         // unit price
         $line_item->UnitPrice = $item->commerce_unit_price->amount_decimal->value();
         // image
+        // line item options
       }
     }  
     
@@ -277,12 +313,6 @@ function commerce_fulfilment_shipstation_shipping_methods($methods) {
     $options[$title] = $display;
   }
   return $options;  
-}
-
-/**
- * Connect to the OData endpoint and pass the API endpoints and credentials.
- */
-function commerce_fulfilment_shipstation_getclient() {
 }
 
 /**
