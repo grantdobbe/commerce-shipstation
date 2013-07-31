@@ -41,24 +41,6 @@ function commerce_fulfilment_shipstation_menu() {
   return $items;
 }
 
-/**
- * Implements hook_action_info().
- */
-function commerce_fulfilment_shipstation_action_info() {
-  
-}
-
-/**
- * Implements hook_token_info().
- */
-function commerce_fulfilment_shipstation_token_info() {
-}
-
-/**
- * Implements hook_tokens().
- */
-function commerce_fulfilment_shipstation_tokens($type, $tokens, array $data = array(), array $options = array()) {
-}
 
 function commerce_fulfilment_shipstation_endpoint() {
   $authorized = false;
@@ -335,17 +317,3 @@ function commerce_fulfilment_shipstation_shipping_methods($methods) {
   return $options;  
 }
 
-/**
- * Action: Fulfil order.
- */
-function commerce_fulfilment_shipstation_send_fulfilment_order_action($order, $context = array()) {
-  
-}
-
-/**
- * Get tracking URL
- *
- * Should be provided by a hook ... or we build up a list of possible shipping services.
- */
-function commerce_fulfilment_shipstation_get_tracking_url($method, $trackingnumber) {
-}
