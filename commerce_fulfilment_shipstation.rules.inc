@@ -9,7 +9,7 @@
 function commerce_fulfilment_shipstation_rules_action_info() {
   $actions = array();
   
-  $actions['commerce_fulfilment_shipstation_rules_assign_tracking_method'] = array (
+  $actions['commerce_fulfilment_shipstation_rules_assign_tracking_number'] = array (
     'label' => t('Assign a tracking number to an order'),
     'group' => t('Commerce ShipStation'),
     'parameter' => array(
@@ -21,8 +21,18 @@ function commerce_fulfilment_shipstation_rules_action_info() {
 	'type' => 'text',
 	'label' => 'Shipping tracking number',
       ),
+       'carrier' => array(
+	'type' => 'text',
+	'label' => 'Shipping carrier',
+      ),
+      'service' => array(
+	'type' => 'text',
+	'label' => 'Shipping service',
+      ),
     ),
   );
+  
+  return $actions;
 
 }
 
@@ -44,8 +54,18 @@ function commerce_fulfilment_shipstation_rules_event_info() {
 	'type' => 'text',
 	'label' => 'Shipping tracking number',
       ),
+      'carrier' => array(
+	'type' => 'text',
+	'label' => 'Shipping carrier',
+      ),
+      'service' => array(
+	'type' => 'text',
+	'label' => 'Shipping service',
+      ),
     ),
   );
+  
+  return $events;
   
 }
 
@@ -54,5 +74,7 @@ function commerce_fulfilment_shipstation_rules_event_info() {
  *
  * Should be provided by a hook ... or we build up a list of possible shipping services.
  */
-function commerce_fulfilment_shipstation_rules_assign_tracking_number($order_number, $tracking_number) {
+function commerce_fulfilment_shipstation_rules_assign_tracking_number($order_number, $tracking_number, $carrier, $service) {
+  dargs();
+  return t('Hello, world!');
 }

@@ -55,6 +55,7 @@ function commerce_fulfilment_shipstation_endpoint() {
   $username = variable_get('commerce_fulfilment_shipstation_username', '');
   $password = variable_get('commerce_fulfilment_shipstation_password', '');
   
+  
   // allow shipstation to authenticate using token 
   if( !empty ( $_GET['auth_key'] ) ) {
     if ( $auth_key == $_GET['auth_key'] ) {
@@ -89,7 +90,13 @@ function commerce_fulfilment_shipstation_endpoint() {
     case "export":
       return commerce_fulfilment_shipstation_export_orders();
     case "shipnotify":
-      return t("fill in this blank with an api call");
+      $order_number = $_GET['order_number'];
+      $tracking_number = $_GET['tracking_number'];
+      $carrier = $_GET['carrier'];
+      $service = $_GET['service'];
+      if ($order_number && $tracking_number && $carrier && $service) 
+        return rules_invoke_event('commerce_fulfilment_shipstation_order_success', $order_number, $tracking_number, $carrier, $service);
+      else return t('Error: missing order info.');
     default:
       return t( 'Error: Invalid action, or no action defined.');
   }
