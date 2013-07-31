@@ -35,3 +35,7 @@ xmlrpc.php
 /profiles
 /scripts
 /themes
+
+# Ignore IntelliJ IDEA project files and folders
+.idea
+commerce-shipstation.iml
