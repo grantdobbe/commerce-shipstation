@@ -1,5 +1,21 @@
 <?php 
 
+
+/** 
+ * Implements hook_help().
+ */
+ 
+function commerce_fulfilment_shipstation_help($path, $arg) {
+  switch ($path) {
+    case 'admin/commerce/config/fulfilment/shipstation':
+      return t('This module provides integration with ShipStation using the !url. 
+                To connect your store to ShipStation using this service, fill in 
+                the "URL to custom XML page" field in the Custom Store Setup dialog 
+                with the following URL: !endpoint', 
+                array('!url' => l(t('Custom Store Development Integration'), "http://api.shipstation.com/"), 
+                '!endpoint' => 'http://' . $_SERVER['HTTP_HOST'] . base_path() . 'shipstation/api-callback'));
+  }
+}
 /**
  * Implements hook_menu().
  */
@@ -247,14 +263,6 @@ function commerce_fulfilment_shipstation_admin_page() {
     '#title' => t('ShipStation Password'),
     '#required' => TRUE,
     '#default_value' => variable_get('commerce_fulfilment_shipstation_password', ''),
-  );
-
-  // shipstation API URI
-  $form['commerce_fulfilment_shipstation_api_uri'] = array(
-    '#type' => 'textfield',
-    '#title' => t('ShipStation API URI'),
-    '#required' => TRUE,
-    '#default_value' => variable_get('commerce_fulfilment_shipstation_api_uri', ''),
   );
 
   // shipstation logging
