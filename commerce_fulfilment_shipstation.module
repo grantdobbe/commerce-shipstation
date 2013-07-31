@@ -67,7 +67,7 @@ function commerce_fulfilment_shipstation_endpoint() {
   $username = variable_get('commerce_fulfilment_shipstation_username', '');
   $password = variable_get('commerce_fulfilment_shipstation_password', '');
   
-  // authenticate using token 
+  // allow shipstation to authenticate using token 
   if( !empty ( $_GET['auth_key'] ) ) {
     if ( $auth_key == $_GET['auth_key'] ) {
       $authorized = true;
@@ -76,7 +76,7 @@ function commerce_fulfilment_shipstation_endpoint() {
       watchdog('commerce_fulfilment_shipstation', 'Wrong auth_key passed', WATCHDOG_ERROR);
     }
   }
-  // authenticate using HTTP Basic
+  // allow shipstation to authenticate using HTTP Basic
   if ( $authorized == false ) {
     // no u/p combo
     if ( !isset( $_SERVER['PHP_AUTH_USER'] ) ) {
@@ -96,7 +96,7 @@ function commerce_fulfilment_shipstation_endpoint() {
       exit;
     }
   }
-  // if we get past the door, run the call based on the action
+  // if shipstation gets past the door, run the call based on the action it defines
   switch ($_GET['action']) {
     case "export":
       return commerce_fulfilment_shipstation_export_orders();
@@ -109,7 +109,7 @@ function commerce_fulfilment_shipstation_endpoint() {
 }
 
 /**
- * Identify orders to send to shipstation
+ * Identify orders to send back to shipstation
  */
 function commerce_fulfilment_shipstation_export_orders() {
   $conditions = array('status' => 'processing');
