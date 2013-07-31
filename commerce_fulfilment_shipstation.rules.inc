@@ -13,11 +13,11 @@ function commerce_fulfilment_shipstation_rules_action_info() {
     'label' => t('Assign a tracking number to an order'),
     'group' => t('Commerce ShipStation'),
     'parameter' => array(
-      'order_number' = array(
+      'order_number' => array(
 	'type' => 'integer',
 	'label' => 'Drupal Commerce Order Number',
       ),
-      'tracking_number' = array(
+      'tracking_number' => array(
 	'type' => 'text',
 	'label' => 'Shipping tracking number',
       ),
@@ -35,12 +35,12 @@ function commerce_fulfilment_shipstation_rules_event_info() {
   $events['commerce_fulfilment_shipstation_order_success'] = array(
     'label' => t('ShipStation reports an order has completed successfully'),
     'group' => t('Commerce ShipStation'),
-    'variables' = array(
-       'order_number' = array(
+    'variables' => array(
+       'order_number' => array(
 	'type' => 'integer',
 	'label' => 'Drupal Commerce Order Number',
       ),
-      'tracking_number' = array(
+      'tracking_number' => array(
 	'type' => 'text',
 	'label' => 'Shipping tracking number',
       ),
