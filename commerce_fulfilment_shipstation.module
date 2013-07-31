@@ -42,6 +42,12 @@ function commerce_fulfilment_shipstation_menu() {
 }
 
 
+/** 
+ * establish a service endpoint for shipstation to communicate with
+ * 
+ * TODO:
+ * - implement logging
+ */
 function commerce_fulfilment_shipstation_endpoint() {
   $authorized = false;
   $logging  = variable_get('commerce_fulfilment_shipstation_logging', 0);
@@ -92,36 +98,36 @@ function commerce_fulfilment_shipstation_endpoint() {
 
 /**
  * Identify orders to send back to shipstation
+ * TODO:
+ *  * - implement XML paging per shipstation's suggestion
  */
 function commerce_fulfilment_shipstation_export_orders() {
-  $conditions = array('status' => 'processing');
-  $orders = commerce_order_load_multiple(array(), $conditions);
+  $conditions = variable_get('commerce_fulfilment_shipstation_export_status', '');
+  $orders = commerce_order_load_multiple(array(), array('status' => $conditions));
   $output = new SimpleXMLElement( "<Orders></Orders>" );
   foreach($orders as $order) {
-    // fetch most of the data we need
+    // fetch most of the data we need to define an order for shipstation
     $data = entity_metadata_wrapper('commerce_order', $order);
     $bill = $data->commerce_customer_billing->commerce_customer_address;
     $ship = $data->commerce_customer_shipping->commerce_customer_address;
-    // get the shipping stuff
+    // get the exposed shipping methods
     $available_methods = variable_get('commerce_fulfilment_shipstation_exposed_shipping_methods', '');
     $chosen_method = commerce_fulfilment_get_shipping_lineitem($data);
     // sanity check for a shipping method on the order
     if ($chosen_method) {
       $chosen_ship = $chosen_method->value()->data['shipping_service']['shipping_method'];
-      //print "<pre>";
-        //var_dump($order_method->commerce_unit_price->amount_decimal->value());
-      //print "</pre>";
     }
     
     // only process orders which have authorized shipping methods
     if ( $chosen_method && in_array($chosen_ship, $available_methods) ) {
-      /* create a line with the following information:
-       * 
-       * tax amount             [NEED]
-       * order notes            [NEED]
-       * private order notes    [NEED]
-       * coupons used           [provided, sort of]
+      /* TODO:
+       * - create lines with the following information:
+       * -- tax amount             [NEED]
+       * -- order notes            [NEED]
+       * -- private order notes    [NEED]
+       * -- coupons used           [provided, sort of]
       */
+      
       // set up the xml schema
       $ss_order = $output->addChild( 'Order' );
       

@@ -2,6 +2,9 @@
 
 /**
  * Implements hook_rules_action_info().
+ * 
+ * The main action we have to implement here is changing the order status 
+ * from "processing" to "complete".
  */
 function commerce_fulfilment_shipstation_rules_action_info() {
 }
