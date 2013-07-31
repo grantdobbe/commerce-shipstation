@@ -18,6 +18,8 @@ function commerce_fulfilment_shipstation_default_rules_configuration() {
       ]
     }
   }');
+  
+  dpm($items);
 
   return $items;
 }
