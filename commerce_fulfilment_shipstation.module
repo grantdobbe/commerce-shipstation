@@ -1,27 +1,26 @@
-<?php 
+<?php
 
-
-/** 
+/**
  * Implements hook_help().
  */
- 
 function commerce_fulfilment_shipstation_help($path, $arg) {
   switch ($path) {
     case 'admin/commerce/config/fulfilment/shipstation':
       return t('This module provides integration with ShipStation using the !url. 
                 To connect your store to ShipStation using this service, fill in 
                 the "URL to custom XML page" field in the Custom Store Setup dialog 
-                with the following URL: !endpoint', 
-                array('!url' => l(t('Custom Store Development Integration'), "http://api.shipstation.com/"), 
+                with the following URL: !endpoint',
+                array('!url' => l(t('Custom Store Development Integration'), "http://api.shipstation.com/"),
                 '!endpoint' => 'http://' . $_SERVER['HTTP_HOST'] . base_path() . 'shipstation/api-callback'));
   }
 }
+
 /**
  * Implements hook_menu().
  */
 function commerce_fulfilment_shipstation_menu() {
   $items = array();
-  
+
   $items['admin/commerce/config/fulfilment/shipstation'] = array(
     'title' => 'ShipStation',
     'description' => 'Configure fulfilment for ShipStation',
@@ -31,22 +30,20 @@ function commerce_fulfilment_shipstation_menu() {
     'type' => MENU_LOCAL_TASK,
   );
   $items['shipstation/api-callback'] = array(
-    'title' => t('ShipStation API Callback URI'),
+    'title' => 'ShipStation API Callback URI',
     'page callback' => 'commerce_fulfilment_shipstation_endpoint',
     'access callback' => TRUE,
     'access arguments' => array('access commerce fulfilment'),
     'type' => MENU_CALLBACK,
   );
-  
+
   return $items;
 }
 
-
-/** 
+/**
  * establish a service endpoint for shipstation to communicate with
- * 
- * TODO:
- * - implement logging
+ *
+ * @TODO: implement logging
  */
 function commerce_fulfilment_shipstation_endpoint() {
   $authorized = false;
@@ -54,7 +51,7 @@ function commerce_fulfilment_shipstation_endpoint() {
   $auth_key = variable_get('commerce_fulfilment_shipstation_alternate_auth', '');
   $username = variable_get('commerce_fulfilment_shipstation_username', '');
   $password = variable_get('commerce_fulfilment_shipstation_password', '');
-  
+
   // allow shipstation to authenticate using token 
   if( !empty ( $_GET['auth_key'] ) ) {
     if ( $auth_key == $_GET['auth_key'] ) {
@@ -64,6 +61,7 @@ function commerce_fulfilment_shipstation_endpoint() {
       watchdog('commerce_fulfilment_shipstation', 'Wrong auth_key passed', WATCHDOG_ERROR);
     }
   }
+
   // allow shipstation to authenticate using HTTP Basic
   if ( $authorized == false ) {
     // no u/p combo
@@ -84,6 +82,7 @@ function commerce_fulfilment_shipstation_endpoint() {
       exit;
     }
   }
+
   // if shipstation gets past the door, run the call based on the action it defines
   switch ($_GET['action']) {
     case "export":
@@ -93,19 +92,17 @@ function commerce_fulfilment_shipstation_endpoint() {
     default:
       return t( 'Error: Invalid action, or no action defined.');
   }
-    
 }
 
 /**
  * Identify orders to send back to shipstation
- * TODO:
- *  * - implement XML paging per shipstation's suggestion
+ * @TODO: implement XML paging per shipstation's suggestion
  */
 function commerce_fulfilment_shipstation_export_orders() {
   $conditions = variable_get('commerce_fulfilment_shipstation_export_status', '');
   $orders = commerce_order_load_multiple(array(), array('status' => $conditions));
   $output = new SimpleXMLElement( "<Orders></Orders>" );
-  foreach($orders as $order) {
+  foreach ($orders as $order) {
     // fetch most of the data we need to define an order for shipstation
     $data = entity_metadata_wrapper('commerce_order', $order);
     $bill = $data->commerce_customer_billing->commerce_customer_address;
@@ -117,61 +114,61 @@ function commerce_fulfilment_shipstation_export_orders() {
     if ($chosen_method) {
       $chosen_ship = $chosen_method->value()->data['shipping_service']['shipping_method'];
     }
-    
+
     // only process orders which have authorized shipping methods
     if ( $chosen_method && in_array($chosen_ship, $available_methods) ) {
-      /* TODO:
-       * - create lines with the following information:
+      /**
+       * @TODO: create lines with the following information:
        * -- tax amount             [NEED]
        * -- order notes            [NEED]
        * -- private order notes    [NEED]
        * -- coupons used           [provided, sort of]
-      */
-      
+       */
+
       // set up the xml schema
       $ss_order = $output->addChild( 'Order' );
-      
+
       // order number
       $ss_order->OrderNumber = $data->order_number->value();
-      
+
       //order_date 
       $ss_order->OrderDate = date(DATE_W3C, $data->created->value());
-      
+
       // order status
       $ss_order->OrderStatus = $data->status->value();
-      
+
       // last modified
       $ss_order->LastModified = date(DATE_W3C, $data->changed->value());
-      
+
       // shipping method
       $ss_order->ShippingMethod = $chosen_method->value()->data['shipping_service']['display_title'];
-      
+
       // order total
       $ss_order->OrderTotal = $data->commerce_order_total->amount_decimal->value();
       // tax amount
-      
+
       // shipping amount
       $ss_order->ShippingAmount = $chosen_method->commerce_unit_price->amount_decimal->value();
       // order notes
-      
+
       // coupons and discounts
-      
+
       // billing address
       $customer = $ss_order->addChild( 'Customer' );
-      
+
       // billing email
       $customer->CustomerCode = $data->mail->value();
-      
+
       // billing info
       $billing = $customer->addChild( 'BillTo' );
       $billing->Name = $bill->name_line->value();
       $billing->Company = $bill->organisation_name->value();
       $billing->Phone = $data->commerce_customer_billing->field_phone_number->value();
       $billing->Email = $data->mail->value();
-      
+
       // shipping info
       $shipping = $customer->addChild( 'ShipTo' );
-      $shipping->Name = $ship->name_line->value();    
+      $shipping->Name = $ship->name_line->value();
       $shipping->Address1 = $ship->thoroughfare->value();
       $shipping->Address2 = $ship->premise->value();
       $shipping->City = $ship->locality->value();
@@ -179,21 +176,21 @@ function commerce_fulfilment_shipstation_export_orders() {
       $shipping->PostalCode = $ship->postal_code->value();
       $shipping->Country = $ship->country->value();
       $shipping->Phone = $data->commerce_customer_shipping->field_phone_number->value();
-      
+
       // line item details
       $line_items = $ss_order->addChild( 'Items' );
       foreach ($data->commerce_line_items as $id => $item) {
         // make sure it's a product
-        if ($item->type->value() !== 'product' ) { 
+        if ($item->type->value() !== 'product' ) {
           continue;
         }
         // verify the product has a weight
-        else if (false) {
-            
+        elseif (false) {
+
         }
-        // if the 
-        else if (false) {
-          
+        // if the
+        elseif (false) {
+
         }
         //otherwise, process it as normal
         else {
@@ -220,15 +217,14 @@ function commerce_fulfilment_shipstation_export_orders() {
           // line item options
         }
       }
-    }  
-    
+    }
   }
-  
+
   Header( 'Content-type: text/xml' );
   $dom = dom_import_simplexml($output)->ownerDocument;
   $dom->formatOutput = true;
-  print $dom->saveXML();
 
+  print $dom->saveXML();
 }
 
 /**
@@ -236,7 +232,7 @@ function commerce_fulfilment_shipstation_export_orders() {
  */
 function commerce_fulfilment_shipstation_admin_page() {
   $form = array();
-  
+
   // shipstation username
   $form['commerce_fulfilment_shipstation_username'] = array(
     '#type' => 'textfield',
@@ -283,7 +279,7 @@ function commerce_fulfilment_shipstation_admin_page() {
     '#type' => 'select',
     '#title' => t('Order Status to Export into ShipStation'),
     '#required' => TRUE,
-    '#options' => commerce_order_status_options_list(), 
+    '#options' => commerce_order_status_options_list(),
     '#default_value' => variable_get('commerce_fulfilment_shipstation_export_status', ''),
   );
 
@@ -292,7 +288,7 @@ function commerce_fulfilment_shipstation_admin_page() {
     '#type' => 'select',
     '#title' => t('Order Status to Set After ShipStation Import'),
     '#required' => TRUE,
-    '#options' => commerce_order_status_options_list(), 
+    '#options' => commerce_order_status_options_list(),
     '#default_value' => variable_get('commerce_fulfilment_shipstation_import_status', ''),
   );
 
@@ -307,7 +303,6 @@ function commerce_fulfilment_shipstation_admin_page() {
   );
 
   return system_settings_form($form);
-  
 }
 
 /**
@@ -315,11 +310,11 @@ function commerce_fulfilment_shipstation_admin_page() {
  */
 function commerce_fulfilment_shipstation_shipping_methods($methods) {
   $options = array();
-  foreach($methods as $method) {
+  foreach ($methods as $method) {
     $title   = $method["name"];
     $display = $method['display_title'];
     $options[$title] = $display;
   }
-  return $options;  
-}
 
+  return $options;
+}
