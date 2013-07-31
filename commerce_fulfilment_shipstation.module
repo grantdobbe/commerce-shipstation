@@ -179,30 +179,42 @@ function commerce_fulfilment_shipstation_export_orders() {
       // line item details
       $line_items = $ss_order->addChild( 'Items' );
       foreach ($data->commerce_line_items as $id => $item) {
+        // make sure it's a product
         if ($item->type->value() !== 'product' ) { 
           continue;
         }
-        $raw_product = commerce_product_load($item->commerce_product->raw());
-        $product = entity_metadata_wrapper('commerce_product', $raw_product);
-        $line_item = $line_items->addChild( 'Item' );
-        // sku
-        $line_item->SKU = $product->sku->value();
-        //name
-        $line_item->Name = $product->title->value();
-        // weight
-        if ($product->field_weight->unit->value() == "kg") {
-          $line_item->Weight = 1000 * $product->field_weight->weight->value();
+        // verify the product has a weight
+        else if (false) {
+            
         }
+        // if the 
+        else if (false) {
+          
+        }
+        //otherwise, process it as normal
         else {
-          $line_item->Weight = $product->field_weight->weight->value();
+          $raw_product = commerce_product_load($item->commerce_product->raw());
+          $product = entity_metadata_wrapper('commerce_product', $raw_product);
+          $line_item = $line_items->addChild( 'Item' );
+          // sku
+          $line_item->SKU = $product->sku->value();
+          //name
+          $line_item->Name = $product->title->value();
+          // weight
+          if ($product->field_weight->unit->value() == "kg") {
+            $line_item->Weight = 1000 * $product->field_weight->weight->value();
+          }
+          else {
+            $line_item->Weight = $product->field_weight->weight->value();
+          }
+          $line_item->WeightUnits = $product->field_weight->unit->value();
+          // quantity
+          $line_item->Quantity = $item->quantity->value();
+          // unit price
+          $line_item->UnitPrice = $item->commerce_unit_price->amount_decimal->value();
+          // image
+          // line item options
         }
-        $line_item->WeightUnits = $product->field_weight->unit->value();
-        // quantity
-        $line_item->Quantity = $item->quantity->value();
-        // unit price
-        $line_item->UnitPrice = $item->commerce_unit_price->amount_decimal->value();
-        // image
-        // line item options
       }
     }  
     
