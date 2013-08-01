@@ -29,7 +29,7 @@ function commerce_fulfilment_shipstation_menu() {
     'access arguments' => array('configure commerce fulfilment'),
     'type' => MENU_LOCAL_TASK,
   );
-  $items['shipstation/api-callback'] = array(
+  $items['shipstation/api-endpoint'] = array(
     'title' => 'ShipStation API Callback URI',
     'page callback' => 'commerce_fulfilment_shipstation_endpoint',
     'access callback' => TRUE,
@@ -92,8 +92,10 @@ function commerce_fulfilment_shipstation_endpoint() {
       $tracking_number = $_GET['tracking_number'];
       $carrier = $_GET['carrier'];
       $service = $_GET['service'];
-      if ($order_number && $tracking_number && $carrier && $service) 
-        return rules_invoke_event('commerce_fulfilment_shipstation_order_success', $order_number, $tracking_number, $carrier, $service);
+      if ($order_number && $tracking_number && $carrier && $service) {
+        $commerce_order = commerce_order_load_by_number($order_number);
+        return rules_invoke_event('commerce_fulfilment_shipstation_order_success', $commerce_order, $tracking_number, $carrier, $service);
+      }
       else return t('Error: missing order info.');
     default:
       return t( 'Error: Invalid action, or no action defined.');

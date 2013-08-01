@@ -46,9 +46,10 @@ function commerce_fulfilment_shipstation_rules_event_info() {
     'label' => t('ShipStation reports an order has completed successfully'),
     'group' => t('Commerce ShipStation'),
     'variables' => array(
-       'order_number' => array(
-	'type' => 'integer',
-	'label' => 'Drupal Commerce Order Number',
+      'commerce_order' => array(
+        'label' => t('Order', array(), array('context' => 'a Drupal Commerce order')),
+        'type' => 'commerce_order',
+        'skip save' => TRUE,
       ),
       'tracking_number' => array(
 	'type' => 'text',
