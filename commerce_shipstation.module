@@ -118,7 +118,7 @@ function commerce_shipstation_export_orders() {
     $ship = $data->commerce_customer_shipping->commerce_customer_address;
     // get the exposed shipping methods
     $available_methods = variable_get('commerce_shipstation_exposed_shipping_methods', '');
-    $chosen_method = commerce_get_shipping_lineitem($data);
+    $chosen_method = commerce_fulfilment_get_shipping_lineitem($data);
     // sanity check for a shipping method on the order
     if ($chosen_method) {
       $chosen_ship = $chosen_method->value()->data['shipping_service']['shipping_method'];
