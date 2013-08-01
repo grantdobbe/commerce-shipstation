@@ -54,6 +54,16 @@ function commerce_shipstation_admin_page() {
       '#default_value' => variable_get('commerce_shipstation_export_paging', '100'),
     );
 
+    // product bundle field to import
+    $form['commerce_shipstation_bundle_field'] = array(
+      '#type' => 'select',
+      '#title' => t('Field used for bundled products'),
+      '#required' => FALSE,
+      '#description' => t('Set this if you are using an Entity Reference field on line items to create a product bundle. This will ensure that your bundled products are imported by ShipStation.'),
+      '#options' => _commerce_shipstation_load_field_options(), 
+      '#default_value' => variable_get('commerce_shipstation_bundle_field', ''),
+    );
+
     // shipstation order export status
     $form['commerce_shipstation_export_status'] = array(
       '#type' => 'select',
@@ -85,4 +95,14 @@ function commerce_shipstation_admin_page() {
   }
 
   return $form;
+}
+
+// creates a list of all fields available on the site
+function _commerce_shipstation_load_field_options() {
+  $options = array();
+  $options['None'] = t('None');
+  foreach (field_info_fields() as $field_name => $field) {
+    $options[$field_name] = $field_name;
+  }
+  return $options;
 }

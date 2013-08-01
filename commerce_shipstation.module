@@ -126,6 +126,7 @@ function commerce_shipstation_export_orders($start_date, $end_date) {
   else {
     return t('Error: must have defined date range.');
   }
+  $bundle_type = variable_get('commerce_shipstation_bundle_field', '');
   
   $output = new SimpleXMLElement( "<Orders></Orders>" );
   foreach ($orders as $order) {
@@ -210,37 +211,55 @@ function commerce_shipstation_export_orders($start_date, $end_date) {
         if ($item->type->value() !== 'product' ) {
           continue;
         }
-        // verify the product has a weight
-        elseif (false) {
-
-        }
-        // if the product has an entity reference field (i.e., it is a bundled product)
-        elseif (false) {
-
-        }
         //otherwise, process it as normal
+        $raw_product = commerce_product_load($item->commerce_product->raw());
+        $product = entity_metadata_wrapper('commerce_product', $raw_product);
+        
+        $line_item = $line_items->addChild( 'Item' );
+        // sku
+        $line_item->SKU = $product->sku->value();
+        //name
+        $line_item->Name = $product->title->value();
+        // weight
+        if ($product->field_weight->unit->value() == "kg") {
+          $line_item->Weight = 1000 * $product->field_weight->weight->value();
+        }
         else {
-          $raw_product = commerce_product_load($item->commerce_product->raw());
-          $product = entity_metadata_wrapper('commerce_product', $raw_product);
-          $line_item = $line_items->addChild( 'Item' );
-          // sku
-          $line_item->SKU = $product->sku->value();
-          //name
-          $line_item->Name = $product->title->value();
-          // weight
-          if ($product->field_weight->unit->value() == "kg") {
-            $line_item->Weight = 1000 * $product->field_weight->weight->value();
+          $line_item->Weight = $product->field_weight->weight->value();
+        }
+        $line_item->WeightUnits = $product->field_weight->unit->value();
+        // quantity
+        $line_item->Quantity = $item->quantity->value();
+        // unit price
+        $line_item->UnitPrice = $item->commerce_unit_price->amount_decimal->value();
+        // image
+        // line item options
+        
+        // if the product contains an entity reference field (e.g., for a product bundle)
+        if ( isset($item->$bundle_type) ) {
+          foreach($item->$bundle_type as $bundle_item) {
+            if($bundle_item->type() == 'commerce_product') {
+              $line_item = $line_items->addChild( 'Item' );
+              // sku
+              $line_item->SKU = $bundle_item->sku->value();
+              //name
+              $line_item->Name = $bundle_item->title->value();
+              // weight
+              if ($bundle_item->field_weight->unit->value() == "kg") {
+                $line_item->Weight = 1000 * $bundle_item->field_weight->weight->value();
+              }
+              else {
+                $line_item->Weight = $bundle_item->field_weight->weight->value();
+              }
+              $line_item->WeightUnits = $bundle_item->field_weight->unit->value();
+              // quantity
+              $line_item->Quantity = $item->quantity->value();
+              // unit price
+              $line_item->UnitPrice = 0.00;
+              // image
+              // line item options
+            }
           }
-          else {
-            $line_item->Weight = $product->field_weight->weight->value();
-          }
-          $line_item->WeightUnits = $product->field_weight->unit->value();
-          // quantity
-          $line_item->Quantity = $item->quantity->value();
-          // unit price
-          $line_item->UnitPrice = $item->commerce_unit_price->amount_decimal->value();
-          // image
-          // line item options
         }
       }
     }
