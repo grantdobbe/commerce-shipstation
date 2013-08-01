@@ -16,18 +16,17 @@ function commerce_shipstation_rules_action_info() {
       'order_number' => array(
 	'type' => 'integer',
 	'label' => 'Drupal Commerce Order Number',
+	'default mode' => 'selector',
       ),
       'tracking_number' => array(
 	'type' => 'text',
 	'label' => 'Shipping tracking number',
+	'default mode' => 'selector',
       ),
-       'carrier' => array(
+      'tracking_number_field' => array(
 	'type' => 'text',
-	'label' => 'Shipping carrier',
-      ),
-      'service' => array(
-	'type' => 'text',
-	'label' => 'Shipping service',
+	'label' => 'The field that should be assigned the tracking number',
+	'default mode' => 'selector',
       ),
     ),
   );
@@ -75,7 +74,7 @@ function commerce_shipstation_rules_event_info() {
  *
  * Should be provided by a hook ... or we build up a list of possible shipping services.
  */
-function commerce_shipstation_rules_assign_tracking_number($order_number, $tracking_number, $carrier, $service) {
+function commerce_shipstation_rules_assign_tracking_number($order_number, $tracking_number, $tracking_number_field) {
   dargs();
   return t('Hello, world!');
 }
