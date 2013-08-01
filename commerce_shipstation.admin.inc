@@ -104,7 +104,7 @@ function commerce_shipstation_admin_page() {
  * is because we need to do something special with one of the fields (password)
  * before we store it into the variables table.
  */
-function commerce_shipstation_exposed_shipping_methods($form, &$form_state) {
+function commerce_shipstation_admin_page_submit($form, &$form_state) {
   // Exclude unnecessary elements.
   form_state_values_clean($form_state);
 
