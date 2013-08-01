@@ -1,42 +1,6 @@
 <?php
 
 /**
- * Implements hook_rules_action_info().
- * 
- * The main action we have to implement here is assigning a tracking number to the order.
- * 
- */
-function commerce_shipstation_rules_action_info() {
-  $actions = array();
-  
-  $actions['commerce_shipstation_rules_assign_tracking_number'] = array (
-    'label' => t('Assign a tracking number to an order'),
-    'group' => t('Commerce ShipStation'),
-    'parameter' => array(
-      'order_number' => array(
-	'type' => 'integer',
-	'label' => 'Drupal Commerce Order Number',
-      ),
-      'tracking_number' => array(
-	'type' => 'text',
-	'label' => 'Shipping tracking number',
-      ),
-       'carrier' => array(
-	'type' => 'text',
-	'label' => 'Shipping carrier',
-      ),
-      'service' => array(
-	'type' => 'text',
-	'label' => 'Shipping service',
-      ),
-    ),
-  );
-  
-  return $actions;
-
-}
-
-/**
  * Implements hook_rules_event_info()
  */
 function commerce_shipstation_rules_event_info() {
@@ -70,12 +34,3 @@ function commerce_shipstation_rules_event_info() {
   
 }
 
-/**
- * Get tracking URL
- *
- * Should be provided by a hook ... or we build up a list of possible shipping services.
- */
-function commerce_shipstation_rules_assign_tracking_number($order_number, $tracking_number, $carrier, $service) {
-  dargs();
-  return t('Hello, world!');
-}

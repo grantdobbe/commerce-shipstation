@@ -8,7 +8,7 @@ dependencies[] = "commerce"
 dependencies[] = "commerce_fulfilment"
 dependencies[] = "commerce_shipping"
 dependencies[] = "rules"
-dependencies[] = "rules_scheduler"
+
 
 ; Configuration
 configure = "admin/commerce/config/fulfilment/shipstation"
