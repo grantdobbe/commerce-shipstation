@@ -11,7 +11,7 @@ function commerce_fulfilment_shipstation_help($path, $arg) {
                 the "URL to custom XML page" field in the Custom Store Setup dialog 
                 with the following URL: !endpoint',
                 array('!url' => l(t('Custom Store Development Integration'), "http://api.shipstation.com/"),
-                '!endpoint' => 'http://' . $_SERVER['HTTP_HOST'] . base_path() . 'shipstation/api-callback'));
+                '!endpoint' => 'http://' . $_SERVER['HTTP_HOST'] . base_path() . 'shipstation/api-endpoint'));
   }
 }
 
