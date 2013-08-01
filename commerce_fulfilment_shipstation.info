@@ -6,6 +6,7 @@ package = "Commerce (fulfilment)"
 ; Dependencies
 dependencies[] = "commerce"
 dependencies[] = "commerce_fulfilment"
+dependencies[] = "commerce_shipping"
 dependencies[] = "rules"
 dependencies[] = "rules_scheduler"
 
