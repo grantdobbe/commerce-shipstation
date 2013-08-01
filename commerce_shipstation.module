@@ -87,7 +87,9 @@ function commerce_shipstation_endpoint() {
   // if shipstation gets past the door, run the call based on the action it defines
   switch ($_GET['action']) {
     case "export":
-      return commerce_shipstation_export_orders();
+      $start_date = $_GET['start_date'];
+      $end_date = $_GET['end_date'];
+      return commerce_shipstation_export_orders($start_date, $end_date);
     case "shipnotify":
       $order_number = $_GET['order_number'];
       $tracking_number = $_GET['tracking_number'];
@@ -107,9 +109,24 @@ function commerce_shipstation_endpoint() {
  * Identify orders to send back to shipstation
  * @TODO: implement XML paging per shipstation's suggestion
  */
-function commerce_shipstation_export_orders() {
-  $conditions = variable_get('commerce_shipstation_export_status', '');
-  $orders = commerce_order_load_multiple(array(), array('status' => $conditions));
+function commerce_shipstation_export_orders($start_date, $end_date) {
+  $status = variable_get('commerce_shipstation_export_status', '');
+  // grab a set of orders between $start_date and $end_date
+  $query = new EntityFieldQuery();
+  $query->entityCondition('entity_type', 'commerce_order')
+    ->propertyCondition('created', array(strtotime($start_date), strtotime($end_date)), 'BETWEEN')
+    ->propertyCondition('status', $status, '=');
+    //->fieldOrderBy('order_number', 'ASC');
+  $result = $query->execute();
+
+  if (isset($result['commerce_order'] )) {
+    $order_ids = array_keys($result['commerce_order']);
+    $orders = commerce_order_load_multiple($order_ids);
+  }
+  else {
+    return t('Error: must have defined date range.');
+  }
+  
   $output = new SimpleXMLElement( "<Orders></Orders>" );
   foreach ($orders as $order) {
     // fetch most of the data we need to define an order for shipstation
