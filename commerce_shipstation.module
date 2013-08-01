@@ -3,7 +3,7 @@
 /**
  * Implements hook_help().
  */
-function commerce_fulfilment_shipstation_help($path, $arg) {
+function commerce_shipstation_help($path, $arg) {
   switch ($path) {
     case 'admin/commerce/config/fulfilment/shipstation':
       return t('This module provides integration with ShipStation using the !url. 
@@ -18,20 +18,21 @@ function commerce_fulfilment_shipstation_help($path, $arg) {
 /**
  * Implements hook_menu().
  */
-function commerce_fulfilment_shipstation_menu() {
+function commerce_shipstation_menu() {
   $items = array();
 
   $items['admin/commerce/config/fulfilment/shipstation'] = array(
     'title' => 'ShipStation',
     'description' => 'Configure fulfilment for ShipStation',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('commerce_fulfilment_shipstation_admin_page'),
+    'page arguments' => array('commerce_shipstation_admin_page'),
     'access arguments' => array('configure commerce fulfilment'),
+    'file' => 'commerce_shipstation.admin.inc',
     'type' => MENU_LOCAL_TASK,
   );
   $items['shipstation/api-endpoint'] = array(
     'title' => 'ShipStation API Callback URI',
-    'page callback' => 'commerce_fulfilment_shipstation_endpoint',
+    'page callback' => 'commerce_shipstation_endpoint',
     'access callback' => TRUE,
     'access arguments' => array('access commerce fulfilment'),
     'type' => MENU_CALLBACK,
@@ -45,12 +46,12 @@ function commerce_fulfilment_shipstation_menu() {
  *
  * @TODO: implement logging
  */
-function commerce_fulfilment_shipstation_endpoint() {
+function commerce_shipstation_endpoint() {
   $authorized = false;
-  $logging  = variable_get('commerce_fulfilment_shipstation_logging', 0);
-  $auth_key = variable_get('commerce_fulfilment_shipstation_alternate_auth', '');
-  $username = variable_get('commerce_fulfilment_shipstation_username', '');
-  $password = variable_get('commerce_fulfilment_shipstation_password', '');
+  $logging  = variable_get('commerce_shipstation_logging', 0);
+  $auth_key = variable_get('commerce_shipstation_alternate_auth', '');
+  $username = variable_get('commerce_shipstation_username', '');
+  $password = variable_get('commerce_shipstation_password', '');
 
   // allow shipstation to authenticate using token 
   if( !empty ( $_GET['auth_key'] ) ) {
@@ -58,7 +59,7 @@ function commerce_fulfilment_shipstation_endpoint() {
       $authorized = true;
     }
     else if ( $auth_key != $_GET['auth_key'] ) {
-      watchdog('commerce_fulfilment_shipstation', 'Wrong auth_key passed', WATCHDOG_ERROR);
+      watchdog('commerce_shipstation', 'Wrong auth_key passed', WATCHDOG_ERROR);
     }
   }
 
@@ -86,7 +87,7 @@ function commerce_fulfilment_shipstation_endpoint() {
   // if shipstation gets past the door, run the call based on the action it defines
   switch ($_GET['action']) {
     case "export":
-      return commerce_fulfilment_shipstation_export_orders();
+      return commerce_shipstation_export_orders();
     case "shipnotify":
       $order_number = $_GET['order_number'];
       $tracking_number = $_GET['tracking_number'];
@@ -94,7 +95,7 @@ function commerce_fulfilment_shipstation_endpoint() {
       $service = $_GET['service'];
       if ($order_number && $tracking_number && $carrier && $service) {
         $commerce_order = commerce_order_load_by_number($order_number);
-        return rules_invoke_event('commerce_fulfilment_shipstation_order_success', $commerce_order, $tracking_number, $carrier, $service);
+        return rules_invoke_event('commerce_shipstation_order_success', $commerce_order, $tracking_number, $carrier, $service);
       }
       else return t('Error: missing order info.');
     default:
@@ -106,8 +107,8 @@ function commerce_fulfilment_shipstation_endpoint() {
  * Identify orders to send back to shipstation
  * @TODO: implement XML paging per shipstation's suggestion
  */
-function commerce_fulfilment_shipstation_export_orders() {
-  $conditions = variable_get('commerce_fulfilment_shipstation_export_status', '');
+function commerce_shipstation_export_orders() {
+  $conditions = variable_get('commerce_shipstation_export_status', '');
   $orders = commerce_order_load_multiple(array(), array('status' => $conditions));
   $output = new SimpleXMLElement( "<Orders></Orders>" );
   foreach ($orders as $order) {
@@ -116,8 +117,8 @@ function commerce_fulfilment_shipstation_export_orders() {
     $bill = $data->commerce_customer_billing->commerce_customer_address;
     $ship = $data->commerce_customer_shipping->commerce_customer_address;
     // get the exposed shipping methods
-    $available_methods = variable_get('commerce_fulfilment_shipstation_exposed_shipping_methods', '');
-    $chosen_method = commerce_fulfilment_get_shipping_lineitem($data);
+    $available_methods = variable_get('commerce_shipstation_exposed_shipping_methods', '');
+    $chosen_method = commerce_get_shipping_lineitem($data);
     // sanity check for a shipping method on the order
     if ($chosen_method) {
       $chosen_ship = $chosen_method->value()->data['shipping_service']['shipping_method'];
@@ -316,7 +317,7 @@ function commerce_fulfilment_shipstation_admin_page() {
 /**
  * Returns a list of shipping service options
  */
-function commerce_fulfilment_shipstation_shipping_methods($methods) {
+function commerce_shipstation_shipping_methods($methods) {
   $options = array();
   foreach ($methods as $method) {
     $title   = $method["name"];
