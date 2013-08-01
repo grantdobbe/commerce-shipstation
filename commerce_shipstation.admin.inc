@@ -23,7 +23,7 @@ function commerce_shipstation_admin_page() {
 
     // shipstation password
     $form['commerce_shipstation_password'] = array(
-      '#type' => 'textfield',
+      '#type' => 'password',
       '#title' => t('ShipStation Password'),
       '#required' => TRUE,
       '#default_value' => variable_get('commerce_shipstation_password', ''),
@@ -81,8 +81,41 @@ function commerce_shipstation_admin_page() {
       '#default_value' => variable_get('commerce_shipstation_exposed_shipping_methods', array()),
     );
 
-    return system_settings_form($form);
+    $form['actions']['#type'] = 'actions';
+    $form['actions']['submit'] = array(
+      '#type' => 'submit',
+      '#value' => t('Save configuration'),
+    );
+
+    $form['#submit'][] = 'commerce_shipstation_admin_page_submit';
+
+    return $form;
   }
 
   return $form;
+}
+
+/**
+ * Submit handler for the admin settings form.
+ *
+ * This submit handler is basically a copy of system_settings_form_submit
+ * handler. The reason we aren't using the system_settings_form_submit handler,
+ * is because we need to do something special with one of the fields (password)
+ * before we store it into the variables table.
+ */
+function commerce_shipstation_exposed_shipping_methods($form, &$form_state) {
+  // Exclude unnecessary elements.
+  form_state_values_clean($form_state);
+
+  foreach ($form_state['values'] as $key => $value) {
+    if (is_array($value) && isset($form_state['values']['array_filter'])) {
+      $value = array_keys(array_filter($value));
+    }
+    if ($key == 'commerce_shipstation_password') {
+      variable_set($key, user_hash_password($value));
+    }
+    variable_set($key, $value);
+  }
+
+  drupal_set_message(t('The configuration options have been saved.'));
 }
