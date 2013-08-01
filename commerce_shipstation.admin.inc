@@ -27,6 +27,7 @@ function commerce_shipstation_admin_page() {
       '#title' => t('ShipStation Password'),
       '#required' => TRUE,
       '#default_value' => variable_get('commerce_shipstation_password', ''),
+      '#attributes' => array('autocomplete' => 'off'),
     );
 
     // shipstation logging
