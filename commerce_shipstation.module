@@ -79,7 +79,7 @@ function commerce_shipstation_endpoint() {
     }
     // bad u/p combo
     //if ( $_SERVER['PHP_AUTH_USER'] != $username || user_hash_password($_SERVER['PHP_AUTH_PW']) != $password ) {
-    if ( $_SERVER['PHP_AUTH_USER'] != $username || $_SERVER['PHP_AUTH_PW'] != $password ) {
+    if ( $_SERVER['PHP_AUTH_USER'] != $username || md5($_SERVER['PHP_AUTH_PW']) != $password ) {
       print t( 'Error: Basic HTTP authentication failed. Please check your credentials and try again.');
       exit;
     }

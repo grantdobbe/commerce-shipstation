@@ -123,10 +123,12 @@ function commerce_shipstation_admin_page_submit($form, &$form_state) {
     if (is_array($value) && isset($form_state['values']['array_filter'])) {
       $value = array_keys(array_filter($value));
     }
-    //if ($key == 'commerce_shipstation_password') {
-      //variable_set($key, user_hash_password($value));
-    //}
-    variable_set($key, $value);
+    if ($key == 'commerce_shipstation_password') {
+      variable_set($key, md5($value));
+    }
+    else {
+      variable_set($key, $value);
+    }
   }
 
   drupal_set_message(t('The configuration options have been saved.'));
