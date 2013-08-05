@@ -78,7 +78,8 @@ function commerce_shipstation_endpoint() {
       exit;
     }
     // bad u/p combo
-    if ( $_SERVER['PHP_AUTH_USER'] != $username || user_hash_password($_SERVER['PHP_AUTH_PW']) != $password ) {
+    //if ( $_SERVER['PHP_AUTH_USER'] != $username || user_hash_password($_SERVER['PHP_AUTH_PW']) != $password ) {
+    if ( $_SERVER['PHP_AUTH_USER'] != $username || $_SERVER['PHP_AUTH_PW'] != $password ) {
       print t( 'Error: Basic HTTP authentication failed. Please check your credentials and try again.');
       exit;
     }
@@ -89,7 +90,8 @@ function commerce_shipstation_endpoint() {
     case "export":
       $start_date = $_GET['start_date'];
       $end_date = $_GET['end_date'];
-      return commerce_shipstation_export_orders($start_date, $end_date);
+      $page = $_GET['page'];
+      return commerce_shipstation_export_orders($start_date, $end_date, $page);
     case "shipnotify":
       $order_number = $_GET['order_number'];
       $tracking_number = $_GET['tracking_number'];
@@ -109,14 +111,22 @@ function commerce_shipstation_endpoint() {
  * Identify orders to send back to shipstation
  * @TODO: implement XML paging per shipstation's suggestion
  */
-function commerce_shipstation_export_orders($start_date, $end_date) {
+function commerce_shipstation_export_orders($start_date, $end_date, $page = 0) {
   $status = variable_get('commerce_shipstation_export_status', '');
   // grab a set of orders between $start_date and $end_date
+  $page_size = variable_get('commerce_shipstation_export_paging', '100');
+  // grap the page size we need
+  if ($page > 0) {
+    $start_page = $page - 1;
+  }
+  
   $query = new EntityFieldQuery();
   $query->entityCondition('entity_type', 'commerce_order')
     ->propertyCondition('created', array(strtotime($start_date), strtotime($end_date)), 'BETWEEN')
-    ->propertyCondition('status', $status, '=');
+    ->propertyCondition('status', $status, '=')
+    ->range($start_page * $page_size, $page_size);
     //->fieldOrderBy('order_number', 'ASC');
+  //print_r($query);
   $result = $query->execute();
 
   if (isset($result['commerce_order'] )) {
@@ -129,6 +139,9 @@ function commerce_shipstation_export_orders($start_date, $end_date) {
   $bundle_type = variable_get('commerce_shipstation_bundle_field', '');
   
   $output = new SimpleXMLElement( "<Orders></Orders>" );
+  // insert the number of pages
+  $output['pages'] = ceil( count($orders) / $page_size);
+  $output['page'] = $page;
   foreach ($orders as $order) {
     // fetch most of the data we need to define an order for shipstation
     $data = entity_metadata_wrapper('commerce_order', $order);
