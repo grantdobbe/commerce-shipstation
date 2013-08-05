@@ -112,14 +112,15 @@ function commerce_shipstation_endpoint() {
  */
 function commerce_shipstation_export_orders($start_date, $end_date, $page = 0) {
   $status = variable_get('commerce_shipstation_export_status', '');
-  $field_phone_number = variable_get('commerce_shipstation_phone_number_field', '');
+  $field_billing_phone_number = variable_get('commerce_shipstation_billing_phone_number_field', '');
+  $field_shipping_phone_number = variable_get('commerce_shipstation_shipping_phone_number_field', '');
   // grab a set of orders between $start_date and $end_date
   $page_size = variable_get('commerce_shipstation_export_paging', '100');
   // generate the page size we need
   if ($page > 0) {
     $start_page = $page - 1;
   }
-  
+
   $query = new EntityFieldQuery();
   $query->entityCondition('entity_type', 'commerce_order')
     ->propertyCondition('created', array(strtotime($start_date), strtotime($end_date)), 'BETWEEN')
@@ -201,7 +202,9 @@ function commerce_shipstation_export_orders($start_date, $end_date, $page = 0) {
       $billing = $customer->addChild( 'BillTo' );
       $billing->Name = $bill->name_line->value();
       $billing->Company = $bill->organisation_name->value();
-      $billing->Phone = $data->commerce_customer_billing->$field_phone_number->value();
+      if (!empty($field_billing_phone_number)) {
+        $billing->Phone = $data->commerce_customer_billing->$field_billing_phone_number->value();
+      }
       $billing->Email = $data->mail->value();
 
       // shipping info
@@ -213,7 +216,9 @@ function commerce_shipstation_export_orders($start_date, $end_date, $page = 0) {
       $shipping->State = $ship->administrative_area->value();
       $shipping->PostalCode = $ship->postal_code->value();
       $shipping->Country = $ship->country->value();
-      $shipping->Phone = $data->commerce_customer_shipping->field_phone_number->value();
+      if (!empty($field_shipping_phone_number)) {
+        $shipping->Phone = $data->commerce_customer_billing->$field_shipping_phone_number->value();
+      }
 
       // line item details
       $line_items = $ss_order->addChild( 'Items' );

@@ -57,15 +57,25 @@ function commerce_shipstation_admin_page() {
     );
 
     // select phone number field
-    $form['commerce_shipstation_phone_number_field'] = array(
+    $form['commerce_shipstation_billing_phone_number_field'] = array(
       '#type' => 'select',
-      '#title' => t('Field for phone number'),
+      '#title' => t('Field for billing phone number'),
       '#required' => FALSE,
       '#description' => t('Select the field you are using for phone numbers in order data here.'),
       '#options' => _commerce_shipstation_load_field_options(), 
-      '#default_value' => variable_get('commerce_shipstation_phone_number_field', ''),
+      '#default_value' => variable_get('commerce_shipstation_billing_phone_number_field', ''),
     );
-    
+
+    // select phone number field
+    $form['commerce_shipstation_shipping_phone_number_field'] = array(
+      '#type' => 'select',
+      '#title' => t('Field for shipping phone number'),
+      '#required' => FALSE,
+      '#description' => t('Select the field you are using for phone numbers in order data here.'),
+      '#options' => _commerce_shipstation_load_field_options(),
+      '#default_value' => variable_get('commerce_shipstation_shipping_phone_number_field', ''),
+    );
+
     // product bundle field to import
     $form['commerce_shipstation_bundle_field'] = array(
       '#type' => 'select',
