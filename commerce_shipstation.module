@@ -109,13 +109,13 @@ function commerce_shipstation_endpoint() {
 
 /**
  * Identify orders to send back to shipstation
- * @TODO: implement XML paging per shipstation's suggestion
  */
 function commerce_shipstation_export_orders($start_date, $end_date, $page = 0) {
   $status = variable_get('commerce_shipstation_export_status', '');
+  $field_phone_number = variable_get('commerce_shipstation_phone_number_field', '');
   // grab a set of orders between $start_date and $end_date
   $page_size = variable_get('commerce_shipstation_export_paging', '100');
-  // grap the page size we need
+  // generate the page size we need
   if ($page > 0) {
     $start_page = $page - 1;
   }
@@ -125,8 +125,6 @@ function commerce_shipstation_export_orders($start_date, $end_date, $page = 0) {
     ->propertyCondition('created', array(strtotime($start_date), strtotime($end_date)), 'BETWEEN')
     ->propertyCondition('status', $status, '=')
     ->range($start_page * $page_size, $page_size);
-    //->fieldOrderBy('order_number', 'ASC');
-  //print_r($query);
   $result = $query->execute();
 
   if (isset($result['commerce_order'] )) {
@@ -134,7 +132,7 @@ function commerce_shipstation_export_orders($start_date, $end_date, $page = 0) {
     $orders = commerce_order_load_multiple($order_ids);
   }
   else {
-    return t('Error: must have defined date range.');
+    return t('Error: check query string parameters and try again.');
   }
   $bundle_type = variable_get('commerce_shipstation_bundle_field', '');
   
@@ -142,6 +140,7 @@ function commerce_shipstation_export_orders($start_date, $end_date, $page = 0) {
   // insert the number of pages
   $output['pages'] = ceil( count($orders) / $page_size);
   $output['page'] = $page;
+  // build the order export page
   foreach ($orders as $order) {
     // fetch most of the data we need to define an order for shipstation
     $data = entity_metadata_wrapper('commerce_order', $order);
@@ -154,7 +153,6 @@ function commerce_shipstation_export_orders($start_date, $end_date, $page = 0) {
     if ($chosen_method) {
       $chosen_ship = $chosen_method->value()->data['shipping_service']['shipping_method'];
     }
-
     // only process orders which have authorized shipping methods
     if ( $chosen_method && in_array($chosen_ship, $available_methods) ) {
       /**
@@ -203,7 +201,7 @@ function commerce_shipstation_export_orders($start_date, $end_date, $page = 0) {
       $billing = $customer->addChild( 'BillTo' );
       $billing->Name = $bill->name_line->value();
       $billing->Company = $bill->organisation_name->value();
-      $billing->Phone = $data->commerce_customer_billing->field_phone_number->value();
+      $billing->Phone = $data->commerce_customer_billing->$field_phone_number->value();
       $billing->Email = $data->mail->value();
 
       // shipping info
