@@ -237,13 +237,15 @@ function commerce_shipstation_export_orders($start_date, $end_date, $page = 0) {
         //name
         $line_item->Name = $product->title->value();
         // weight
-        if ($product->field_weight->unit->value() == "kg") {
-          $line_item->Weight = 1000 * $product->field_weight->weight->value();
+        if (isset($product->field_weight)) {
+          if ($product->field_weight->unit->value() == "kg") {
+            $line_item->Weight = 1000 * $product->field_weight->weight->value();
+          }
+          else {
+            $line_item->Weight = $product->field_weight->weight->value();
+          }
+          $line_item->WeightUnits = $product->field_weight->unit->value();
         }
-        else {
-          $line_item->Weight = $product->field_weight->weight->value();
-        }
-        $line_item->WeightUnits = $product->field_weight->unit->value();
         // quantity
         $line_item->Quantity = $item->quantity->value();
         // unit price
@@ -261,13 +263,15 @@ function commerce_shipstation_export_orders($start_date, $end_date, $page = 0) {
               //name
               $line_item->Name = $bundle_item->title->value();
               // weight
-              if ($bundle_item->field_weight->unit->value() == "kg") {
-                $line_item->Weight = 1000 * $bundle_item->field_weight->weight->value();
+              if (isset($bundle_item->field_weight)) {
+                if ($bundle_item->field_weight->unit->value() == "kg") {
+                  $line_item->Weight = 1000 * $bundle_item->field_weight->weight->value();
+                }
+                else {
+                  $line_item->Weight = $bundle_item->field_weight->weight->value();
+                }
+                $line_item->WeightUnits = $bundle_item->field_weight->unit->value();
               }
-              else {
-                $line_item->Weight = $bundle_item->field_weight->weight->value();
-              }
-              $line_item->WeightUnits = $bundle_item->field_weight->unit->value();
               // quantity
               $line_item->Quantity = $item->quantity->value();
               // unit price
