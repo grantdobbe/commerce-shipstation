@@ -1,4 +1,9 @@
 <?php
+/**
+ * @file
+ *
+ * Provides default rules for Commerce Shipstation.
+ */
 
 /**
  * Implements hook_default_rules_configuration().
@@ -18,6 +23,6 @@ function commerce_shipstation_default_rules_configuration() {
       ]
     }
   }');
-  
+
   return $items;
 }

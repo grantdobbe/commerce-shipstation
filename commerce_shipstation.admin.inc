@@ -1,16 +1,24 @@
 <?php
+/**
+ * @file
+ *
+ * Admin settings page.
+ */
 
 /**
- * Admin settings page.
+ *
+ * Implements hook_admin_page().
+ *
+ * Provides an interface for configuring module options.
  */
 function commerce_shipstation_admin_page() {
   $form = array();
 
   $options = commerce_shipstation_shipping_methods(commerce_shipping_methods());
-  
+
   if (empty($options)) {
     $form['commerce_shipstation_error_message'] = array(
-      '#markup' => t('You\'ll need at least one shipping method module turned on. e.g. Commerce Flatrate shipping'),
+      '#markup' => t('You\'ll need at least one shipping method module turned on. e.g., Commerce Flatrate shipping'),
     );
   }
   else {
@@ -62,7 +70,7 @@ function commerce_shipstation_admin_page() {
       '#title' => t('Field for billing phone number'),
       '#required' => FALSE,
       '#description' => t('Select the field you are using for phone numbers in order data here.'),
-      '#options' => _commerce_shipstation_load_field_options(), 
+      '#options' => _commerce_shipstation_load_field_options(),
       '#default_value' => variable_get('commerce_shipstation_billing_phone_number_field', ''),
     );
 
@@ -82,7 +90,7 @@ function commerce_shipstation_admin_page() {
       '#title' => t('Field used for bundled products'),
       '#required' => FALSE,
       '#description' => t('Set this if you are using an Entity Reference field on line items to create a product bundle. This will ensure that your bundled products are imported by ShipStation.'),
-      '#options' => _commerce_shipstation_load_field_options(), 
+      '#options' => _commerce_shipstation_load_field_options(),
       '#default_value' => variable_get('commerce_shipstation_bundle_field', ''),
     );
 
@@ -155,7 +163,9 @@ function commerce_shipstation_admin_page_submit($form, &$form_state) {
 }
 
 
-// creates a list of all fields available on the site
+/**
+ * Builds a list of all fields available on the site.
+ */
 function _commerce_shipstation_load_field_options() {
   $options = array();
   $options['None'] = t('None');

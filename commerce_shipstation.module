@@ -1,4 +1,9 @@
 <?php
+/**
+ * @file
+ *
+ * Contains primary functions for the Commerce Shipstation module.
+ */
 
 /**
  * Implements hook_help().
@@ -6,9 +11,9 @@
 function commerce_shipstation_help($path, $arg) {
   switch ($path) {
     case 'admin/commerce/config/fulfilment/shipstation':
-      return t('This module provides integration with ShipStation using the !url. 
-                To connect your store to ShipStation using this service, fill in 
-                the "URL to custom XML page" field in the Custom Store Setup dialog 
+      return t('This module provides integration with ShipStation using the !url.
+                To connect your store to ShipStation using this service, fill in
+                the "URL to custom XML page" field in the Custom Store Setup dialog
                 with the following URL: !endpoint',
                 array('!url' => l(t('Custom Store Development Integration'), "http://api.shipstation.com/"),
                 '!endpoint' => 'http://' . $_SERVER['HTTP_HOST'] . base_path() . 'shipstation/api-endpoint'));
@@ -19,8 +24,6 @@ function commerce_shipstation_help($path, $arg) {
  * Implements hook_menu().
  */
 function commerce_shipstation_menu() {
-  $items = array();
-
   $items['admin/commerce/config/fulfilment/shipstation'] = array(
     'title' => 'ShipStation',
     'description' => 'Configure fulfilment for ShipStation',
@@ -47,24 +50,24 @@ function commerce_shipstation_menu() {
  * @TODO: implement logging
  */
 function commerce_shipstation_endpoint() {
-  $authorized = false;
+  $authorized = FALSE;
   $logging  = variable_get('commerce_shipstation_logging', 0);
   $auth_key = variable_get('commerce_shipstation_alternate_auth', '');
   $username = variable_get('commerce_shipstation_username', '');
   $password = variable_get('commerce_shipstation_password', '');
 
-  // allow shipstation to authenticate using token 
-  if( !empty ( $_GET['auth_key'] ) ) {
+  // allow shipstation to authenticate using token
+  if (!empty ( $_GET['auth_key'] ) ) {
     if ( $auth_key == $_GET['auth_key'] ) {
-      $authorized = true;
+      $authorized = TRUE;
     }
-    else if ( $auth_key != $_GET['auth_key'] ) {
+    elseif ( $auth_key != $_GET['auth_key'] ) {
       watchdog('commerce_shipstation', 'Wrong auth_key passed', WATCHDOG_ERROR);
     }
   }
 
   // allow shipstation to authenticate using HTTP Basic
-  if ( $authorized == false ) {
+  if ( $authorized == FALSE ) {
     // no u/p combo
     if ( !isset( $_SERVER['PHP_AUTH_USER'] ) ) {
       header( "WWW-Authenticate: Basic realm =\"ShipStation XML API for Drupal Commerce" );
@@ -136,7 +139,7 @@ function commerce_shipstation_export_orders($start_date, $end_date, $page = 0) {
     return t('Error: check query string parameters and try again.');
   }
   $bundle_type = variable_get('commerce_shipstation_bundle_field', '');
-  
+
   $output = new SimpleXMLElement( "<Orders></Orders>" );
   // insert the number of pages
   $output['pages'] = ceil( count($orders) / $page_size);
@@ -156,7 +159,7 @@ function commerce_shipstation_export_orders($start_date, $end_date, $page = 0) {
     }
     // only process orders which have authorized shipping methods
     if ( $chosen_method && in_array($chosen_ship, $available_methods) ) {
-      /**
+      /*
        * @TODO: create lines with the following information:
        * -- tax amount             [NEED]
        * -- order notes            [NEED]
@@ -170,7 +173,7 @@ function commerce_shipstation_export_orders($start_date, $end_date, $page = 0) {
       // order number
       $ss_order->OrderNumber = $data->order_number->value();
 
-      //order_date 
+      //order_date
       $ss_order->OrderDate = date(DATE_W3C, $data->created->value());
 
       // order status
@@ -230,7 +233,7 @@ function commerce_shipstation_export_orders($start_date, $end_date, $page = 0) {
         //otherwise, process it as normal
         $raw_product = commerce_product_load($item->commerce_product->raw());
         $product = entity_metadata_wrapper('commerce_product', $raw_product);
-        
+
         $line_item = $line_items->addChild( 'Item' );
         // sku
         $line_item->SKU = $product->sku->value();
@@ -252,11 +255,11 @@ function commerce_shipstation_export_orders($start_date, $end_date, $page = 0) {
         $line_item->UnitPrice = $item->commerce_unit_price->amount_decimal->value();
         // image
         // line item options
-        
+
         // if the product contains an entity reference field (e.g., for a product bundle)
         if ( isset($item->$bundle_type) ) {
-          foreach($item->$bundle_type as $bundle_item) {
-            if($bundle_item->type() == 'commerce_product') {
+          foreach ( $item->$bundle_type as $bundle_item ) {
+            if ( $bundle_item->type() == 'commerce_product' ) {
               $line_item = $line_items->addChild( 'Item' );
               // sku
               $line_item->SKU = $bundle_item->sku->value();
@@ -287,13 +290,13 @@ function commerce_shipstation_export_orders($start_date, $end_date, $page = 0) {
 
   Header( 'Content-type: text/xml' );
   $dom = dom_import_simplexml($output)->ownerDocument;
-  $dom->formatOutput = true;
+  $dom->formatOutput = TRUE;
 
   print $dom->saveXML();
 }
 
 /**
- * Returns a list of shipping service options
+ * Returns a list of shipping service options.
  */
 function commerce_shipstation_shipping_methods($methods) {
   $options = array();
