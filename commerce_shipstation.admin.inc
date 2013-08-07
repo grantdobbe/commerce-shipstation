@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @file
  *
@@ -6,7 +7,6 @@
  */
 
 /**
- *
  * Implements hook_admin_page().
  *
  * Provides an interface for configuring module options.
@@ -18,11 +18,11 @@ function commerce_shipstation_admin_page() {
 
   if (empty($options)) {
     $form['commerce_shipstation_error_message'] = array(
-      '#markup' => t('You\'ll need at least one shipping method module turned on. e.g., Commerce Flatrate shipping'),
+      '#markup' => t("You'll need at least one shipping method module turned on. e.g., Commerce Flatrate shipping"),
     );
   }
   else {
-    // shipstation username
+    // Shipstation username.
     $form['commerce_shipstation_username'] = array(
       '#type' => 'textfield',
       '#title' => t('ShipStation Username'),
@@ -30,7 +30,7 @@ function commerce_shipstation_admin_page() {
       '#default_value' => variable_get('commerce_shipstation_username', ''),
     );
 
-    // shipstation password
+    // Shipstation password.
     $form['commerce_shipstation_password'] = array(
       '#type' => 'password',
       '#title' => t('ShipStation Password'),
@@ -39,7 +39,7 @@ function commerce_shipstation_admin_page() {
       '#attributes' => array('autocomplete' => 'off'),
     );
 
-    // shipstation logging
+    // Shipstation logging.
     $form['commerce_shipstation_logging'] = array(
       '#type' => 'checkbox',
       '#title' => t('Log requests to ShipStation'),
@@ -47,7 +47,7 @@ function commerce_shipstation_admin_page() {
       '#default_value' => variable_get('commerce_shipstation_logging', 0),
     );
 
-    // shipstation alternate authentication
+    // Shipstation alternate authentication.
     $form['commerce_shipstation_alternate_auth'] = array(
       '#type' => 'textfield',
       '#title' => t('Alternate Authentication'),
@@ -55,16 +55,16 @@ function commerce_shipstation_admin_page() {
       '#default_value' => variable_get('commerce_shipstation_alternate_auth', ''),
     );
 
-    // shipstation export paging
+    // Shipstation export paging.
     $form['commerce_shipstation_export_paging'] = array(
       '#type' => 'select',
       '#title' => t('Number of Records to Export per Page'),
       '#description' => t('Sets the number of orders to send to ShipStation at a time. Change this setting if you experience import timeouts.'),
-      '#options' => array( 50 => 50, 75 => 75, 100 => 100, 150 => 150 ),
+      '#options' => array(50 => 50, 75 => 75, 100 => 100, 150 => 150),
       '#default_value' => variable_get('commerce_shipstation_export_paging', '100'),
     );
 
-    // select phone number field
+    // Select phone number field.
     $form['commerce_shipstation_billing_phone_number_field'] = array(
       '#type' => 'select',
       '#title' => t('Field for billing phone number'),
@@ -74,7 +74,7 @@ function commerce_shipstation_admin_page() {
       '#default_value' => variable_get('commerce_shipstation_billing_phone_number_field', ''),
     );
 
-    // select phone number field
+    // Select phone number field.
     $form['commerce_shipstation_shipping_phone_number_field'] = array(
       '#type' => 'select',
       '#title' => t('Field for shipping phone number'),
@@ -84,7 +84,7 @@ function commerce_shipstation_admin_page() {
       '#default_value' => variable_get('commerce_shipstation_shipping_phone_number_field', ''),
     );
 
-    // product bundle field to import
+    // Product bundle field to import.
     $form['commerce_shipstation_bundle_field'] = array(
       '#type' => 'select',
       '#title' => t('Field used for bundled products'),
@@ -94,7 +94,7 @@ function commerce_shipstation_admin_page() {
       '#default_value' => variable_get('commerce_shipstation_bundle_field', ''),
     );
 
-    // shipstation order export status
+    // Shipstation order export status.
     $form['commerce_shipstation_export_status'] = array(
       '#type' => 'select',
       '#title' => t('Order Status to Export into ShipStation'),
@@ -103,7 +103,7 @@ function commerce_shipstation_admin_page() {
       '#default_value' => variable_get('commerce_shipstation_export_status', ''),
     );
 
-    // shipstation order import status
+    // Shipstation order import status.
     $form['commerce_shipstation_import_status'] = array(
       '#type' => 'select',
       '#title' => t('Order Status to Set After ShipStation Import'),
@@ -112,12 +112,12 @@ function commerce_shipstation_admin_page() {
       '#default_value' => variable_get('commerce_shipstation_import_status', ''),
     );
 
-    // shipstation available shipping methods
+    // Shipstation available shipping methods.
     $form['commerce_shipstation_exposed_shipping_methods'] = array(
       '#type' => 'checkboxes',
       '#title' => t('Shipping Methods Available to ShipStation'),
       '#required' => TRUE,
-      '#options' => $options, // may need to be drupal_map_assoc
+      '#options' => $options, // May need to be drupal_map_assoc.
       '#default_value' => variable_get('commerce_shipstation_exposed_shipping_methods', array()),
     );
 
