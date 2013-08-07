@@ -2,7 +2,6 @@
 
 /**
  * @file
- *
  * Provides default rules for Commerce Shipstation.
  */
 

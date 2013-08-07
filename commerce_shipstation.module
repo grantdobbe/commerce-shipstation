@@ -2,7 +2,6 @@
 
 /**
  * @file
- *
  * Contains primary functions for the Commerce Shipstation module.
  */
 
@@ -18,7 +17,7 @@ function commerce_shipstation_help($path, $arg) {
                 with the following URL: !endpoint',
                 array(
                   '!url' => l(t('Custom Store Development Integration'), "http://api.shipstation.com/"),
-                  '!endpoint' => 'http://' . $_SERVER['HTTP_HOST'] . base_path() . 'shipstation/api-endpoint'
+                  '!endpoint' => 'http://' . $_SERVER['HTTP_HOST'] . base_path() . 'shipstation/api-endpoint',
                 )
               );
   }

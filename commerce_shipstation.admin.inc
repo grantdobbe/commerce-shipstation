@@ -2,7 +2,6 @@
 
 /**
  * @file
- *
  * Admin settings page.
  */
 
@@ -117,7 +116,8 @@ function commerce_shipstation_admin_page() {
       '#type' => 'checkboxes',
       '#title' => t('Shipping Methods Available to ShipStation'),
       '#required' => TRUE,
-      '#options' => $options, // May need to be drupal_map_assoc.
+      // May need to be drupal_map_assoc.
+      '#options' => $options,
       '#default_value' => variable_get('commerce_shipstation_exposed_shipping_methods', array()),
     );
 

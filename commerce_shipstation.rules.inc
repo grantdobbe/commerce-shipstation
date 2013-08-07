@@ -2,7 +2,6 @@
 
 /**
  * @file
- *
  * Declares rules events, actions, and conditions for Commerce Shipstation
  * module.
  */
@@ -19,8 +18,8 @@ function commerce_shipstation_rules_event_info() {
     'group' => t('Commerce ShipStation'),
     'variables' => array(
       'commerce_order' => array(
-      'label' => t('Order', array(), array('context' => 'a Drupal Commerce order')),
-      'type' => 'commerce_order',
+        'label' => t('Order', array(), array('context' => 'a Drupal Commerce order')),
+        'type' => 'commerce_order',
         'skip save' => TRUE,
       ),
       'tracking_number' => array(
