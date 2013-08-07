@@ -1,8 +1,10 @@
 <?php
+
 /**
  * @file
  *
- * Declares rules events, actions, and conditions for Commerce Shipstation module.
+ * Declares rules events, actions, and conditions for Commerce Shipstation
+ * module.
  */
 
 
