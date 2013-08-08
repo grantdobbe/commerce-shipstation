@@ -1,0 +1,23 @@
+<?php
+
+/**
+ * @file
+ * Install/Uninstall processes.
+ */
+
+/**
+ * Implements hook_uninstall().
+ */
+function commerce_shipstation_uninstall() {
+  variable_del('commerce_shipstation_username');
+  variable_del('commerce_shipstation_password');
+  variable_del('commerce_shipstation_logging');
+  variable_del('commerce_shipstation_alternate_auth');
+  variable_del('commerce_shipstation_export_paging');
+  variable_del('commerce_shipstation_billing_phone_number_field');
+  variable_del('commerce_shipstation_shipping_phone_number_field');
+  variable_del('commerce_shipstation_bundle_field');
+  variable_del('commerce_shipstation_export_status');
+  variable_del('commerce_shipstation_import_status');
+  variable_del('commerce_shipstation_exposed_shipping_methods');
+}
