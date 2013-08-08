@@ -211,7 +211,7 @@ function commerce_shipstation_export_orders($start_date, $end_date, $page = 0) {
       $billing = $customer->addChild('BillTo');
       $billing->Name = $bill->name_line->value();
       $billing->Company = $bill->organisation_name->value();
-      if (!empty($field_billing_phone_number)) {
+      if (strtolower($field_billing_phone_number) != 'none') {
         $billing->Phone = $data->commerce_customer_billing->$field_billing_phone_number->value();
       }
       $billing->Email = $data->mail->value();
@@ -225,7 +225,7 @@ function commerce_shipstation_export_orders($start_date, $end_date, $page = 0) {
       $shipping->State = $ship->administrative_area->value();
       $shipping->PostalCode = $ship->postal_code->value();
       $shipping->Country = $ship->country->value();
-      if (!empty($field_shipping_phone_number)) {
+      if (strtolower($field_shipping_phone_number) != 'none') {
         $shipping->Phone = $data->commerce_customer_billing->$field_shipping_phone_number->value();
       }
 
