@@ -97,6 +97,21 @@ function commerce_shipstation_endpoint() {
       $start_date = $_GET['start_date'];
       $end_date = $_GET['end_date'];
       $page = $_GET['page'];
+      // Logging the date and time requested. Main reason this log was added is
+      // because at the time this comment is being made shipstation sends a
+      // request when using their 'Test Connection' for custom store with a
+      // start and end date being the same day but with a 5 minute spread.
+      // The issue here is shipstation is sending the time that it is where
+      // they are located, so in other words the is a possiblity you will never
+      // get your custom store on shipstation set up with out opening a support
+      // issue. You can find out if their time does not match your own by
+      // looking at the log.
+      $variables = array(
+        '@start' => $start_date,
+        '@end' => $end_date,
+        '@page' => $page,
+      );
+      watchdog('Commerce Shipstation', 'Action: export || Start Date: @start || End Date: @end || Page: @page', $variables);
       return commerce_shipstation_export_orders($start_date, $end_date, $page);
 
     case "shipnotify":
