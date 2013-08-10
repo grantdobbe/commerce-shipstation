@@ -158,7 +158,16 @@ function commerce_shipstation_export_orders($start_date, $end_date, $page = 0) {
     $orders = commerce_order_load_multiple($order_ids);
   }
   else {
-    return t('Error: check query string parameters and try again.');
+    // Return an empty Orders element for shipstation. This is useful for
+    // setting up your custom store using the "test connection".
+    $output = new SimpleXMLElement("<Orders></Orders>");
+
+    header('Content-type: text/xml');
+    $dom = dom_import_simplexml($output)->ownerDocument;
+    $dom->formatOutput = TRUE;
+
+    print $dom->saveXML();
+    return;
   }
   $bundle_type = variable_get('commerce_shipstation_bundle_field', '');
 
