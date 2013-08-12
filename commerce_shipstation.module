@@ -150,7 +150,16 @@ function commerce_shipstation_export_orders($start_date, $end_date, $page = 0) {
   $query->entityCondition('entity_type', 'commerce_order')
     ->propertyCondition('created', array(strtotime($start_date), strtotime($end_date)), 'BETWEEN')
     ->propertyCondition('status', $status, '=')
-    ->range($start_page * $page_size, $page_size);
+    ->count();
+
+  // Get our page count before we get our range so we have the total result
+  // count instead of a subset result count.
+  $page_count = ceil($query->execute() / $page_size);
+
+  // Unset the count property so we can run the range method on the query.
+  unset($query->count);
+
+  $query->range($start_page * $page_size, $page_size);
   $result = $query->execute();
 
   if (isset($result['commerce_order'])) {
@@ -173,8 +182,8 @@ function commerce_shipstation_export_orders($start_date, $end_date, $page = 0) {
 
   $output = new SimpleXMLElement("<Orders></Orders>");
   // Insert the number of pages.
-  $output['pages'] = ceil(count($orders) / $page_size);
-  $output['page'] = $page;
+  $output['pages'] = $page_count;
+
   // Build the order export page.
   foreach ($orders as $order) {
     // Fetch most of the data we need to define an order for shipstation.
