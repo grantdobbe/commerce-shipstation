@@ -205,13 +205,13 @@ function commerce_shipstation_export_orders($start_date, $end_date, $page = 0) {
       $ss_order->OrderNumber = $data->order_number->value();
 
       // Order_date.
-      $ss_order->OrderDate = date(DATE_W3C, $data->created->value());
+      $ss_order->OrderDate = date('m/d/Y H:i', $data->created->value());
 
       // Order status.
       $ss_order->OrderStatus = $data->status->value();
 
       // Last modified.
-      $ss_order->LastModified = date(DATE_W3C, $data->changed->value());
+      $ss_order->LastModified = date('m/d/Y H:i', $data->changed->value());
 
       // Shipping method.
       $ss_order->ShippingMethod = $chosen_method->value()->data['shipping_service']['display_title'];
@@ -280,7 +280,8 @@ function commerce_shipstation_export_orders($start_date, $end_date, $page = 0) {
           $line_item->WeightUnits = $product->field_weight->unit->value();
         }
         // Quantity.
-        $line_item->Quantity = $item->quantity->value();
+        $line_item->Quantity = number_format($item->quantity->value(), 0);
+
         // Unit price.
         $line_item->UnitPrice = $item->commerce_unit_price->amount_decimal->value();
         // Image.
@@ -306,7 +307,8 @@ function commerce_shipstation_export_orders($start_date, $end_date, $page = 0) {
                 $line_item->WeightUnits = $bundle_item->field_weight->unit->value();
               }
               // Quantity.
-              $line_item->Quantity = $item->quantity->value();
+              $line_item->Quantity = number_format($item->quantity->value(), 0);
+
               // Unit price.
               $line_item->UnitPrice = 0.00;
               // Image.
