@@ -156,8 +156,8 @@ function commerce_shipstation_export_orders($start_date, $end_date, $page = 0) {
   // count instead of a subset result count.
   $page_count = ceil($query->execute() / $page_size);
 
-  // Unset the count property so we can run the range method on the query.
-  unset($query->count);
+  // Reset the count property so we can run the range method on the query.
+  $query->count = FALSE;
 
   $query->range($start_page * $page_size, $page_size);
   $result = $query->execute();
